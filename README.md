@@ -44,5 +44,29 @@ When a user asks a question (e.g., *"What is the minimum attendance required?"*)
 4. The LLaMA 3.1 8B model formulates an accurate, helpful response based *only* on that context.
 5. The system applies the backend watermark signature ensuring trace integrity.
 
+## 🎯 Real-World Example Interactions
+
+Here are some actual terminal outputs demonstrating how the Assistant handles diverse and complex institutional queries:
+
+**Handling Policy Rules:**
+> **Query:** What is the minimum attendance required to appear in exams at LPU?
+> **Answer:** According to the LPU Attendance Policy (Source 1), the minimum attendance required to appear in End-Term Examinations (ETE) at LPU is 75% in each subject individually, covering both theory and practical sessions.
+
+**Information Synthesis:**
+> **Query:** Can I study abroad?
+> **Answer:** To study abroad at Lovely Professional University (LPU), you must meet the eligibility criteria. According to the policy documents, the general requirements include:
+> 1. Completing at least one full year of study in a regular LPU program before applying.
+> 2. Having a minimum CGPA of 6.5.
+> 3. Meeting all eligibility requirements set by the host/partner university.
+> 4. Not having any re-appears or backlogs at the time of application.
+
+**Fallback/Safety (Handling missing knowledge):**
+> **Query:** What if I fall sick after coming back from abroad?
+> **Answer:** I could not find this information in the available LPU policy documents. Please contact the relevant university office.
+
+**Handling Nuanced Edge Cases:**
+> **Query:** Can I get duty leave after coming back from semester exchange?
+> **Answer:** According to the context from Source 2: semester_abroad_policy, if a student reports back to LPU after the start of a term due to overlapping semester dates, duty leaves will be updated in the student's account. A maximum of 45 duty leave days are permitted on a case-by-case basis. So, yes, you can get duty leave after coming back from semester exchange.
+
 ---
 > *Development Notes: Certain raw data vectors, sensitive API credentials, and internal watermark signatures are git-ignored for project security and repository hygiene.*
