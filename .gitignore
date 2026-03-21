@@ -1,0 +1,123 @@
+# ============================================================
+# Project : LPU RAG Knowledge Assistant
+# Author  : Thrinath
+# File    : .gitignore
+# ============================================================
+
+# ── Environment & Secrets ──────────────────────────────────
+.env
+.env.local
+.env.production
+.env.staging
+*.env
+secrets.json
+api_keys.txt
+
+# ── Python ─────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ── Virtual Environments ───────────────────────────────────
+venv/
+env/
+ENV/
+rag-lpu/
+.venv/
+conda-env/
+*.egg-info/
+dist/
+build/
+
+# ── RAG Data Files (keep local, never push) ────────────────
+docs_raw/
+docs_clean/
+chunks/
+embeddings/
+*.docx
+*.pdf
+*.txt
+
+# ── Jupyter Notebooks ──────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ── macOS ──────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# ── Windows ────────────────────────────────────────────────
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ── Linux ──────────────────────────────────────────────────
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# ── IDE & Editors ──────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+
+# ── Logs & Temp Files ──────────────────────────────────────
+*.log
+*.tmp
+*.temp
+*.cache
+logs/
+temp/
+tmp/
+
+# ── Model Files (too large for git) ────────────────────────
+*.bin
+*.pt
+*.pth
+*.onnx
+*.safetensors
+models/
+model_cache/
+
+# ── ChromaDB internals ─────────────────────────────────────
+chroma.sqlite3
+*.chroma
+
+# ── Testing ────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.cover
+
+# ── Package managers ───────────────────────────────────────
+node_modules/
+package-lock.json
+yarn.lock
+
+# ── Scripts output ─────────────────────────────────────────
+organize_docs.sh
+
+# ── Keep these (force include) ─────────────────────────────
+!requirements.txt
+!README.md
+!scripts/*.py
+scripts/_watermark.py
+MASTER_PROMPT.md
+!.gitignore
