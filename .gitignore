@@ -120,4 +120,5 @@ organize_docs.sh
 !scripts/*.py
 scripts/_watermark.py
 MASTER_PROMPT.md
+stage2_prompt.md
 !.gitignore

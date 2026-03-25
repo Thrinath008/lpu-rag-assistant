@@ -11,7 +11,8 @@
 # ============================================================
 
 import sys
-sys.path.insert(0, ".")
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _watermark import _stamp, _get_signature, _AUTHOR_FULL
 
 # Silent integrity verification on every run
