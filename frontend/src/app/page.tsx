@@ -65,21 +65,25 @@ export default function Home() {
       {/* Messages Area */}
       {messages.length > 0 && (
         <div className="flex-1 overflow-y-auto space-y-6 pb-20 px-2 scroll-smooth">
-          {messages.map((msg) => (
-            <MessageBubble key={msg.id} message={msg} />
+          {messages.map((msg, idx) => (
+            <MessageBubble 
+              key={msg.id} 
+              message={msg} 
+              isStreaming={isLoading && idx === messages.length - 1} 
+            />
           ))}
           
-          {isLoading && (
-            <div className="flex gap-4">
+          {isLoading && !messages[messages.length - 1]?.content && (
+            <div className="flex gap-4 animate-in fade-in duration-300">
               <div className="w-8 h-8 rounded-lg bg-orange-600 flex items-center justify-center shrink-0">
                 <Bot className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1 space-y-3">
-                <div className="bg-slate-800 rounded-2xl rounded-tl-sm px-5 py-4 flex items-center gap-2 w-fit">
+                <div className="bg-slate-800/50 rounded-2xl rounded-tl-sm px-5 py-4 flex items-center gap-2 w-fit border border-slate-700">
                   <Sparkles className="w-4 h-4 text-orange-500 animate-pulse" />
                   <span className="text-slate-400 text-sm animate-pulse">Analyzing university knowledge base...</span>
                 </div>
-                <div className="max-w-[85%] space-y-2">
+                <div className="max-w-[85%] space-y-2 pl-2">
                   <Skeleton className="h-4 w-[90%]" />
                   <Skeleton className="h-4 w-[75%]" />
                   <Skeleton className="h-4 w-[40%]" />
@@ -152,12 +156,12 @@ function SuggestionCard({ text, onClick }: { text: string; onClick: () => void }
   );
 }
 
-function MessageBubble({ message }: { message: ChatMessage }) {
+function MessageBubble({ message, isStreaming }: { message: ChatMessage; isStreaming?: boolean }) {
   const isUser = message.role === 'user';
   const [showSources, setShowSources] = useState(false);
 
   return (
-    <div className={`flex gap-4 ${isUser ? 'flex-row-reverse' : ''}`}>
+    <div className={`flex gap-4 ${isUser ? 'flex-row-reverse' : ''} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
       <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
         isUser ? 'bg-slate-700' : 'bg-orange-600 shadow-lg shadow-orange-500/20'
       }`}>
@@ -165,7 +169,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
       </div>
       
       <div className={`max-w-[85%] ${isUser ? 'items-end' : 'items-start'} flex flex-col gap-2`}>
-        <div className={`px-5 py-4 rounded-2xl overflow-hidden leading-relaxed prose prose-invert prose-p:leading-relaxed prose-pre:bg-slate-900 prose-pre:border prose-pre:border-slate-700 ${
+        <div className={`px-5 py-4 rounded-2xl overflow-hidden leading-relaxed prose prose-invert prose-p:leading-relaxed prose-pre:bg-slate-900 prose-pre:border prose-pre:border-slate-700 relative ${
           isUser 
             ? 'bg-slate-800 rounded-tr-sm text-slate-200' 
             : 'bg-transparent border border-slate-700 rounded-tl-sm text-slate-300'
@@ -173,6 +177,9 @@ function MessageBubble({ message }: { message: ChatMessage }) {
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {message.content}
           </ReactMarkdown>
+          {isStreaming && (
+            <span className="inline-block w-2 h-4 mb-[-2px] ml-1 bg-orange-500 animate-pulse align-middle rounded-sm shadow-sm shadow-orange-500/50" />
+          )}
         </div>
 
         {!isUser && message.sources && message.sources.length > 0 && (

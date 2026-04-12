@@ -15,10 +15,12 @@ try:
 except ImportError:
     pass
 
-from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Depends, Header
+from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Depends
 from pydantic import BaseModel
 from api.core.config import settings
 from api.services.pipeline_service import process_uploaded_document
+from api.routes.auth import get_admin_user
+from api.core.auth import User
 
 router = APIRouter()
 
@@ -28,17 +30,16 @@ class ProcessResponse(BaseModel):
     chunks_created: int
     category: str
 
-def verify_admin_key(x_admin_key: str = Header(None)):
-    if not x_admin_key or x_admin_key != settings.ADMIN_KEY:
-        raise HTTPException(status_code=403, detail="Forbidden: Invalid Admin Key")
-    return x_admin_key
-
 @router.post("/admin/upload", response_model=ProcessResponse)
 async def upload_document(
     file: UploadFile = File(...),
     category: str = Form(...),
-    admin_key: str = Depends(verify_admin_key)
+    admin_user: User = Depends(get_admin_user)
 ):
+    """
+    Upload and process a new document.
+    Requires admin authentication.
+    """
     if not file.filename.endswith(".docx"):
         raise HTTPException(status_code=400, detail="Only .docx files are allowed.")
         

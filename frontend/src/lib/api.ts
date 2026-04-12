@@ -25,6 +25,17 @@ export const chatApi = {
       { headers: { 'x-api-key': API_KEY } }
     );
     return response.data;
+  },
+  askStream: async (query: string): Promise<Response> => {
+    const response = await fetch(`${API_V1_URL}/ask/stream`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+      },
+      body: JSON.stringify({ query }),
+    });
+    return response;
   }
 };
 

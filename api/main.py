@@ -10,13 +10,15 @@ import time
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.middleware.gzip import GZIPMiddleware
 
 # Adjust path for internal imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from api.core.config import settings
 from api.core.logging import logger
-from api.routes import health, chat, admin
+from api.routes import health, chat, admin, auth
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -25,28 +27,58 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# CORS Configuration
+# ============================================================
+# Security Middleware
+# ============================================================
+
+# GZIP compression
+app.add_middleware(GZIPMiddleware, minimum_size=1000)
+
+# Trusted host
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Adjust for production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    TrustedHostMiddleware,
+    allowed_hosts=os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 )
 
-# Middleware: Request Logging & Execution Time
+# CORS Configuration (Production-ready)
+allowed_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+    max_age=600,
+)
+
+# ============================================================
+# Middleware: Request Logging & Security
+# ============================================================
+
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     start_time = time.time()
     response = await call_next(request)
     duration = time.time() - start_time
+    
     logger.info(
         f"Method: {request.method} Path: {request.url.path} "
         f"Status: {response.status_code} Duration: {duration:.4f}s"
     )
+    
+    # Add security headers
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    
     return response
 
+# ============================================================
 # Global Exception Handler
+# ============================================================
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Global exception at {request.url}: {str(exc)}", exc_info=True)
@@ -55,8 +87,24 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={"detail": "An internal server error occurred. Our team has been notified."},
     )
 
+# ============================================================
+# Root Endpoint
+# ============================================================
+
+@app.get("/")
+async def root():
+    return {
+        "name": settings.PROJECT_NAME,
+        "version": settings.VERSION,
+        "status": "running"
+    }
+
+# ============================================================
 # Include Routers with Versioning
+# ============================================================
+
 app.include_router(health, prefix="/api")
+app.include_router(auth, prefix="/api/v1/auth")
 app.include_router(chat, prefix=settings.API_V1_STR)
 app.include_router(admin, prefix=settings.API_V1_STR)
 

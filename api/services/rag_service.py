@@ -13,6 +13,7 @@ from typing import List, Dict, Any
 from tenacity import retry, stop_after_attempt, wait_exponential
 from functools import lru_cache
 import time
+import json
 
 from api.core.config import settings
 from api.core.logging import logger
@@ -382,3 +383,54 @@ def ask_rag(query: str) -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"Error in RAG pipeline: {str(e)}", exc_info=True)
         raise e
+
+def stream_rag(query: str):
+    """
+    Generator that yields JSON chunks for a streaming response.
+    Format: {"type": "sources" | "content" | "error" | "end", "content": ...}
+    """
+    try:
+        # 1. Retrieval (Synchronous for now)
+        chunks = retrieve_chunks(query)
+        context = build_context(chunks)
+        
+        # 2. Yield sources immediately
+        yield json.dumps({
+            "type": "sources", 
+            "content": [c if isinstance(c, dict) else c.dict() for c in chunks]
+        }) + "\n"
+        
+        # 3. Stream from Groq
+        groq_client = get_groq_client()
+        user_message = f"Context from LPU policy documents:\n\n{context}\n\n---\n\nStudent Query: {query}\n\nPlease answer the query based on the context provided above."
+        
+        response = groq_client.chat.completions.create(
+            model=GROQ_MODEL,
+            temperature=0.2,
+            max_tokens=1024,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_message}
+            ],
+            stream=True
+        )
+        
+        for chunk in response:
+            if chunk.choices[0].delta.content:
+                yield json.dumps({
+                    "type": "content", 
+                    "content": chunk.choices[0].delta.content
+                }) + "\n"
+                
+        # 4. Final signature
+        yield json.dumps({
+            "type": "end", 
+            "content": {
+                "author_sig": "LPU-Assistant-M3-Stream",
+                "integrity": "prod-ver-2026-stream"
+            }
+        }) + "\n"
+        
+    except Exception as e:
+        logger.error(f"Error in streaming RAG pipeline: {str(e)}", exc_info=True)
+        yield json.dumps({"type": "error", "content": str(e)}) + "\n"
