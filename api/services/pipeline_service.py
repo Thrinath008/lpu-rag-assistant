@@ -9,63 +9,47 @@ import sys
 import json
 
 from api.core.config import settings
-from scripts.convert_docx_to_text import extract_text_from_docx
-from scripts.chunk_documents import split_into_chunks
-from scripts.embed_and_store import model, collection
+from api.core.logging import logger
 
 def process_uploaded_document(filepath: str, filename: str, category: str):
     """
     Process a single uploaded .docx file through the entire RAG pipeline.
+    Lazy-loads pipeline modules on first use.
     """
-    # 1. Convert to Text
-    clean_cat_path = os.path.join(settings.DOCS_CLEAN_DIR, category)
-    os.makedirs(clean_cat_path, exist_ok=True)
-    
-    txt_filename = filename.replace(".docx", ".txt")
-    txt_path = os.path.join(clean_cat_path, txt_filename)
-    
-    text = extract_text_from_docx(filepath)
-    with open(txt_path, "w", encoding="utf-8") as f:
-        f.write(text)
+    try:
+        # Lazy import pipeline functions
+        from scripts.convert_docx_to_text import extract_text_from_docx
+        from scripts.chunk_documents import split_into_chunks
+        from scripts.embed_and_store import store_embeddings
         
-    # 2. Chunking
-    source_name = filename.replace(".docx", "")
-    chunks = split_into_chunks(text, source_name, category)
-    
-    chunks_cat_path = os.path.join(settings.CHUNKS_DIR, category)
-    os.makedirs(chunks_cat_path, exist_ok=True)
-    
-    chunk_json_path = os.path.join(chunks_cat_path, f"{source_name}.json")
-    with open(chunk_json_path, "w", encoding="utf-8") as f:
-        json.dump(chunks, f, indent=2, ensure_ascii=False)
+        # 1. Convert to Text
+        clean_cat_path = os.path.join(settings.DOCS_CLEAN_DIR, category)
+        os.makedirs(clean_cat_path, exist_ok=True)
         
-    # 3. Embed and Store
-    if chunks:
-        ids = []
-        texts = []
-        metadatas = []
-        for c in chunks:
-            ids.append(c["chunk_id"])
-            texts.append(c["text"])
-            metadatas.append({
-                "source_file": c["source_file"],
-                "category": c["category"],
-                "chunk_index": c["chunk_index"],
-                "token_count": c["token_count"]
-            })
-            
-        embeddings = model.encode(texts, show_progress_bar=False, batch_size=16)
+        txt_filename = filename.replace(".docx", ".txt")
+        txt_path = os.path.join(clean_cat_path, txt_filename)
         
-        collection.add(
-            ids=ids,
-            documents=texts,
-            embeddings=[e.tolist() for e in embeddings],
-            metadatas=metadatas
-        )
-    
-    return {
-        "status": "success",
-        "chunks_created": len(chunks),
-        "source": source_name,
-        "category": category
-    }
+        text = extract_text_from_docx(filepath)
+        with open(txt_path, "w", encoding="utf-8") as f:
+            f.write(text)
+        
+        logger.info(f"✓ Extracted text from {filename}")
+        
+        # 2. Split into chunks
+        chunks = split_into_chunks(text, filename, category)
+        logger.info(f"✓ Created {len(chunks)} chunks from {filename}")
+        
+        # 3. Embed and store
+        store_embeddings(chunks, category)
+        logger.info(f"✓ Stored embeddings for {filename}")
+        
+        return {
+            "status": "success",
+            "chunks_created": len(chunks),
+            "filename": filename
+        }
+    except Exception as e:
+        logger.error(f"Pipeline error: {e}")
+        raise
+
+logger.info("✓ Pipeline service module loaded")

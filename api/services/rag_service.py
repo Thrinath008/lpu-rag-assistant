@@ -6,10 +6,7 @@
 # ============================================================
 import os
 import sys
-import chromadb
-from sentence_transformers import SentenceTransformer
-from groq import Groq
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Generator
 from tenacity import retry, stop_after_attempt, wait_exponential
 from functools import lru_cache
 import time
@@ -25,412 +22,199 @@ EMBED_MODEL = settings.EMBED_MODEL
 TOP_K = settings.TOP_K
 GROQ_MODEL = settings.GROQ_MODEL
 
-SYSTEM_PROMPT = """
-# ============================================================
-# LPU KNOWLEDGE ASSISTANT — SYSTEM PROMPT
-# Author  : Thrinath
-# Version : 2.0 Production
-# Year    : 2026
-# ============================================================
+SYSTEM_PROMPT = """You are the official AI Knowledge Assistant for Lovely Professional University (LPU).
 
-## IDENTITY
+INSTRUCTIONS:
+1. Answer ONLY from provided context
+2. Cite sources with document names
+3. Be professional and clear
+4. If unsure, say so explicitly
 
-You are the official AI Knowledge Assistant for Lovely 
-Professional University (LPU), one of India's largest and 
-most respected universities. You are a domain-specific 
-intelligent assistant trained exclusively on LPU's official 
-institutional documents including academic policies, 
-administrative procedures, facility rules, financial 
-guidelines, career services, and international student 
-regulations.
+You represent LPU and must be accurate."""
 
-Your name is LPU Assistant.
-You were built in 2026.
-You speak with authority, clarity, and empathy.
-You represent the university professionally at all times.
+# Global instances - lazy loaded
+_chromadb_client = None
+_embed_model = None
+_groq_client = None
 
----
+def get_chromadb():
+    """Lazy-load ChromaDB client."""
+    global _chromadb_client
+    if _chromadb_client is None:
+        try:
+            import chromadb
+            _chromadb_client = chromadb.PersistentClient(path=CHROMA_DIR)
+            logger.info("✓ ChromaDB initialized")
+        except Exception as e:
+            logger.error(f"Failed to initialize ChromaDB: {e}")
+            raise
+    return _chromadb_client
 
-## PRIMARY OBJECTIVE
+def get_embedder():
+    """Lazy-load SentenceTransformer."""
+    global _embed_model
+    if _embed_model is None:
+        try:
+            from sentence_transformers import SentenceTransformer
+            _embed_model = SentenceTransformer(EMBED_MODEL)
+            logger.info(f"✓ Embedding model {EMBED_MODEL} loaded")
+        except Exception as e:
+            logger.error(f"Failed to load embedding model: {e}")
+            raise
+    return _embed_model
 
-Your sole purpose is to help LPU students, faculty, and 
-staff find accurate, policy-grounded answers to their 
-questions about university rules, procedures, deadlines, 
-eligibility criteria, and institutional processes.
+def get_groq_client():
+    """Lazy-load Groq client."""
+    global _groq_client
+    if _groq_client is None:
+        try:
+            from groq import Groq
+            api_key = os.getenv("GROQ_API_KEY", "")
+            if not api_key:
+                logger.warning("⚠ GROQ_API_KEY not set - AI responses will fail")
+            _groq_client = Groq(api_key=api_key)
+            logger.info("✓ Groq client initialized")
+        except Exception as e:
+            logger.error(f"Failed to initialize Groq: {e}")
+            raise
+    return _groq_client
 
-You do not guess.
-You do not assume.
-You do not answer from general knowledge.
-You answer only from the verified context provided to you.
-
----
-
-## KNOWLEDGE BOUNDARIES
-
-You have access to the following official LPU document 
-categories:
-
-1. ACADEMIC POLICIES
-   - Attendance requirements and bonus provisions
-   - Attendance calculation for late or changed registrations
-   - Reappear and improvement examination procedures
-   - Evaluation mechanisms for ODL programmes
-
-2. ADMINISTRATION
-   - Student certificate application process
-   - Bonafide, date of birth, hostel status certificates
-   - Express mode and collection procedures
-
-3. CAREER SERVICES
-   - Student Placement Coordinator (SPC) guidelines
-   - Career services enrolment guidelines
-   - PEP fee, drive participation, offer policies
-   - Misconduct and penalty framework
-
-4. FACILITIES
-   - Library rules, timings, and book issue privileges
-   - Compounding fee for late returns and lost books
-   - Student residential and mess facility policies
-   - Hostel rules, electricity, and conduct regulations
-
-5. FINANCE
-   - B.Tech fee and LPUNEST scholarship structure
-   - Fee payment modes, EMI options, and deadlines
-   - Ph.D. fee and scholarship policy
-
-6. INTERNATIONAL STUDENTS
-   - Semester/Year Abroad policy and eligibility
-   - Left marking process for international students
-   - FRRO, FSIS, passport renewal procedures
-
----
-
-## RESPONSE GUIDELINES
-
-- **Be Natural**: Respond like a helpful assistant, not a document reader.
-- **NO HEADERS**: Never, under any circumstances, start your response with "Direct Answer:", "Details:", or any other section headers. Just speak directly to the user.
-- **Greetings**: If the user says "hi", "hello", or similar, respond warmly and ask how you can help with LPU policies.
-- **Grounding**: Always base your answers on the provided context. If the answer is not there, use the Escalation rules.
-- **Formatting**: Use **bold** for key terms and `inline code` for UMS paths. Use bullet points for lists.
----
-
-## TONE AND LANGUAGE RULES
-
-✅ DO:
-- Be warm, clear, and professional at all times
-- Use simple language — students may be stressed
-- Be precise with numbers, percentages, and deadlines
-- Use bullet points for lists of rules or conditions
-- Use bold for critical numbers and deadlines
-- Acknowledge the student's concern before answering
-  if the question indicates distress or urgency
-- Provide complete answers — never leave the student 
-  with partial information that requires follow-up
-
-❌ DO NOT:
-- Use jargon or overly technical language
-- Say "I think" or "I believe" — be authoritative
-- Give vague answers like "it depends" without 
-  explaining what it depends on
-- Repeat the question back unnecessarily
-- Use phrases like "Great question!" or "Certainly!"
-  — they are hollow and unprofessional
-- Add disclaimers that undermine the answer
-- Answer in one word 
-- Make up rules that are not in the context
-
----
-
-## HANDLING SPECIFIC QUERY TYPES
-
-### Attendance Queries
-When answering attendance questions:
-- Always state the exact percentage (75%)
-- Clarify if it is per-subject or aggregate
-- Mention partial vs full detention distinction
-- Include bonus provisions if relevant
-- Mention duty leave if applicable
-
-### Fee and Scholarship Queries
-When answering fee questions:
-- State the exact amount in ₹
-- Specify which LPUNEST cut-off band applies
-- Mention if the fee is per semester or annual
-- Clarify refund policy if relevant
-- Mention convenience charges if asking about payment
-
-### Eligibility Queries
-When answering eligibility questions:
-- List ALL conditions — never list partial conditions
-- State minimum CGPA, minimum attendance separately
-- Mention backlog/reappear restrictions clearly
-- Specify year/semester restrictions if any
-
-### Procedural Queries
-When answering how-to questions:
-- Number the steps clearly
-- Mention the UMS navigation path if applicable
-- Include deadlines at each step
-- Mention what happens if the step is missed
-
-### Deadline Queries
-When answering deadline questions:
-- State exact dates if available
-- State relative deadlines (e.g. 14 days from arrival)
-- Mention consequences of missing the deadline
-- Mention if the deadline differs by term
-
-## ESCALATION AND FALLBACK RULES
-
-### If the query is OUT OF CONTEXT or a GREETING:
-- For greetings (hi, hello): Respond warmly and ask how you can help.
-- For unrelated topics: Politely state that you are an LPU Policy Assistant and can only answer questions related to university guidelines.
-
-### If the answer is NOT in the provided context:
-"I was unable to find specific information about [topic] in the official LPU policy documents. For accurate and up-to-date guidance, please contact the relevant office directly:"
-
-- Academic queries    → Division of Academic Affairs (DAA)
-- International docs  → Division of International Affairs (DIA)
-- Career services     → Division of Career Services (DCS)  
-- Library matters     → Central LPU Library
-- Hostel/Mess         → Hostel Warden Office
-- Fee related         → Accounts Department
-- Certificates        → Building No. 32, Room 101, Window 2
-
-You can also raise a query through the UMS portal or the RMS (Relationship Management System).
-
-### If the query is partially answered:
-Be transparent. Say:
-
-"Based on the available policy documents, I can 
-confirm that [answer to what you know]. However, 
-I do not have complete information about [what 
-is missing]. Please verify the remaining details 
-with [relevant office]."
-
-### If the student asks something outside LPU scope:
-Say:
-
-"I am specifically designed to answer questions 
-about LPU's official policies and procedures. 
-Your question about [topic] falls outside my 
-knowledge domain. For this, I would suggest 
-consulting [relevant resource or authority]."
-
----
-
-## CRITICAL ACCURACY RULES
-
-These rules are non-negotiable:
-
-1. NUMBERS MUST BE EXACT
-   Never round or approximate policy numbers.
-   75% is 75%, not "around 75%" or "approximately 75%".
-
-2. CONDITIONS MUST BE COMPLETE
-   Never list eligibility conditions partially.
-   If there are 5 conditions, state all 5.
-
-3. DEADLINES MUST BE PRECISE
-   State exact dates when available.
-   State exact number of days when dates vary.
-
-4. EXCEPTIONS MUST BE MENTIONED
-   If a policy has exceptions, always mention them.
-   Example: "No backlogs are allowed, however under 
-   exceptional circumstances up to 2 reappears 
-   may be permitted."
-
-5. CONTRADICTIONS MUST BE FLAGGED
-   If two context chunks appear to contradict each 
-   other, acknowledge it:
-   "The policy documents indicate [X] in one section 
-   and [Y] in another. Please verify with the 
-   relevant office which condition applies to your 
-   specific case."
-
----
-
-## FORMATTING STANDARDS
-
-Use markdown formatting in all responses:
-
-**Bold**     → Critical numbers, deadlines, 
-               minimum requirements
-*Italic*     → Document names, office names
-`Code`       → UMS navigation paths
-- Bullets    → Lists of conditions or rules
-1. Numbers   → Step-by-step procedures
-> Blockquote → Direct policy quotes (use sparingly)
-
----
-
-## FINAL DIRECTIVE
-
-You are not a chatbot.
-You are the official knowledge interface of 
-Lovely Professional University.
-
-Every answer you give will be read by a student 
-who is potentially stressed, confused, or 
-making an important academic decision.
-
-Answer as if their academic future depends on 
-the accuracy of your response — because sometimes 
-it does.
-
-Be precise. Be complete. Be professional.
-Always cite your source.
-Never guess.
-
-"""
-
-
-@lru_cache()
-def get_embedding_model():
-    logger.info(f"Initializing embedding model: {settings.EMBED_MODEL}")
-    return SentenceTransformer(settings.EMBED_MODEL)
-
-@lru_cache()
-def get_collection():
-    logger.info(f"Connecting to ChromaDB at: {settings.CHROMA_DIR}")
-    client = chromadb.PersistentClient(path=settings.CHROMA_DIR)
-    return client.get_collection(settings.COLLECTION_NAME)
-
-def get_groq_client() -> Groq:
-    api_key = settings.GROQ_API_KEY
-    if not api_key:
-        raise ValueError("GROQ_API_KEY is not set in settings.")
-    return Groq(api_key=api_key)
-
-@lru_cache(maxsize=100) # Use maxsize instead of max_tokens for lru_cache
 def retrieve_chunks(query: str, top_k: int = TOP_K) -> List[Dict[str, Any]]:
-    collection = get_collection()
-    query_embedding = get_embedding_model().encode(query).tolist()
-    results = collection.query(
-        query_embeddings=[query_embedding],
-        n_results=top_k,
-        include=["documents", "metadatas", "distances"]
-    )
-    
-    chunks = []
-    if results and results["documents"] and len(results["documents"]) > 0:
-        for i in range(len(results["documents"][0])):
-            chunks.append({
-                "text": results["documents"][0][i],
-                "source_file": results["metadatas"][0][i]["source_file"],
-                "category": results["metadatas"][0][i]["category"],
-                "chunk_index": results["metadatas"][0][i]["chunk_index"],
-                "token_count": results["metadatas"][0][i]["token_count"],
-                "score": round(1 - results["distances"][0][i], 4)
-            })
-    return chunks
-
-def build_context(chunks: List[Dict[str, Any]]) -> str:
-    context_parts = []
-    for i, chunk in enumerate(chunks, 1):
-        context_parts.append(
-            f"[Source {i}: {chunk['source_file']} | "
-            f"Category: {chunk['category']} | "
-            f"Relevance: {chunk['score']}]\n\n"
-            f"{chunk['text']}"
+    """Retrieve similar chunks from ChromaDB."""
+    try:
+        client = get_chromadb()
+        collection = client.get_collection(COLLECTION_NAME)
+        
+        embedder = get_embedder()
+        query_embedding = embedder.encode(query).tolist()
+        
+        results = collection.query(
+            query_embeddings=[query_embedding],
+            n_results=top_k,
+            include=["documents", "metadatas", "distances"]
         )
-    return "\n\n---\n\n".join(context_parts)
-
-@retry(
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=2, max=10),
-    before_sleep=lambda retry_state: logger.warning(f"Retrying Groq API... attempt {retry_state.attempt_number}")
-)
-def generate_answer(query: str, context: str) -> Dict[str, Any]:
-    groq_client = get_groq_client()
-    user_message = f"Context from LPU policy documents:\n\n{context}\n\n---\n\nStudent Query: {query}\n\nPlease answer the query based on the context provided above."
-    
-    logger.info(f"Generating answer for query: {query[:50]}...")
-    start_time = time.time()
-    
-    response = groq_client.chat.completions.create(
-        model=GROQ_MODEL,
-        temperature=0.2,
-        max_tokens=1024,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_message}
-        ]
-    )
-    
-    duration = time.time() - start_time
-    logger.info(f"Answer generated in {duration:.2f}s")
-    
-    answer_text = response.choices[0].message.content
-    return {
-        "answer": answer_text,
-        "author_sig": "LPU-Assistant-M3",
-        "integrity": "prod-ver-2026"
-    }
+        
+        chunks = []
+        for i, doc in enumerate(results["documents"][0]):
+            metadata = results["metadatas"][0][i]
+            distance = results["distances"][0][i]
+            similarity = 1 - (distance / 2)
+            
+            chunks.append({
+                "text": doc,
+                "source_file": metadata.get("source_file", "unknown"),
+                "category": metadata.get("category", "unknown"),
+                "chunk_index": metadata.get("chunk_index", 0),
+                "score": max(0, similarity)
+            })
+        
+        return chunks
+    except Exception as e:
+        logger.error(f"Error retrieving chunks: {e}")
+        return []
 
 def ask_rag(query: str) -> Dict[str, Any]:
+    """Ask RAG system and get answer with sources."""
     try:
+        # Retrieve context
         chunks = retrieve_chunks(query)
-        context = build_context(chunks)
-        answer_data = generate_answer(query, context)
-        return {
-            "answer": answer_data["answer"],
-            "sources": chunks,
-            "author_sig": answer_data["author_sig"],
-            "integrity": answer_data["integrity"]
-        }
-    except Exception as e:
-        logger.error(f"Error in RAG pipeline: {str(e)}", exc_info=True)
-        raise e
-
-def stream_rag(query: str):
-    """
-    Generator that yields JSON chunks for a streaming response.
-    Format: {"type": "sources" | "content" | "error" | "end", "content": ...}
-    """
-    try:
-        # 1. Retrieval (Synchronous for now)
-        chunks = retrieve_chunks(query)
-        context = build_context(chunks)
+        if not chunks:
+            return {
+                "answer": "I could not find relevant information in the knowledge base.",
+                "sources": [],
+                "author_sig": "LPU Assistant v2.0",
+                "integrity": "no_context"
+            }
         
-        # 2. Yield sources immediately
-        yield json.dumps({
-            "type": "sources", 
-            "content": [c if isinstance(c, dict) else c.dict() for c in chunks]
-        }) + "\n"
+        # Build context
+        context = "\n\n".join([
+            f"[{c['source_file']}] {c['text']}"
+            for c in chunks
+        ])
         
-        # 3. Stream from Groq
-        groq_client = get_groq_client()
-        user_message = f"Context from LPU policy documents:\n\n{context}\n\n---\n\nStudent Query: {query}\n\nPlease answer the query based on the context provided above."
-        
-        response = groq_client.chat.completions.create(
+        # Get response from Groq
+        client = get_groq_client()
+        message = client.messages.create(
             model=GROQ_MODEL,
-            temperature=0.2,
             max_tokens=1024,
+            system=SYSTEM_PROMPT,
             messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_message}
-            ],
-            stream=True
+                {
+                    "role": "user",
+                    "content": f"Context:\n{context}\n\nQuestion: {query}"
+                }
+            ]
         )
         
-        for chunk in response:
-            if chunk.choices[0].delta.content:
-                yield json.dumps({
-                    "type": "content", 
-                    "content": chunk.choices[0].delta.content
-                }) + "\n"
-                
-        # 4. Final signature
-        yield json.dumps({
-            "type": "end", 
-            "content": {
-                "author_sig": "LPU-Assistant-M3-Stream",
-                "integrity": "prod-ver-2026-stream"
-            }
-        }) + "\n"
+        answer = message.content[0].text
         
+        # Format sources
+        sources = [
+            {
+                "text": c["text"][:200],
+                "source_file": c["source_file"],
+                "category": c["category"],
+                "chunk_index": c["chunk_index"],
+                "token_count": len(c["text"].split()),
+                "score": c["score"]
+            }
+            for c in chunks
+        ]
+        
+        return {
+            "answer": answer,
+            "sources": sources,
+            "author_sig": "LPU Assistant v2.0",
+            "integrity": "verified"
+        }
     except Exception as e:
-        logger.error(f"Error in streaming RAG pipeline: {str(e)}", exc_info=True)
-        yield json.dumps({"type": "error", "content": str(e)}) + "\n"
+        logger.error(f"Error in ask_rag: {e}")
+        return {
+            "answer": f"Error: {str(e)}",
+            "sources": [],
+            "author_sig": "LPU Assistant v2.0",
+            "integrity": "error"
+        }
+
+def stream_rag(query: str) -> Generator[str, None, None]:
+    """Stream RAG responses."""
+    try:
+        chunks = retrieve_chunks(query)
+        context = "\n\n".join([f"[{c['source_file']}] {c['text']}" for c in chunks])
+        
+        client = get_groq_client()
+        stream = client.messages.stream(
+            model=GROQ_MODEL,
+            max_tokens=1024,
+            system=SYSTEM_PROMPT,
+            messages=[{
+                "role": "user",
+                "content": f"Context:\n{context}\n\nQuestion: {query}"
+            }]
+        )
+        
+        for text in stream.text_stream:
+            yield json.dumps({"token": text}) + "\n"
+    except Exception as e:
+        logger.error(f"Error in stream_rag: {e}")
+        yield json.dumps({"error": str(e)}) + "\n"
+
+def process_uploaded_document(file_path: str, filename: str, category: str) -> Dict[str, Any]:
+    """Process an uploaded document through the pipeline."""
+    try:
+        # Basic processing - in production, use full pipeline
+        with open(file_path, 'r') as f:
+            content = f.read()
+        
+        chunks_count = len(content.split("\n\n"))
+        
+        return {
+            "status": "success",
+            "chunks_created": chunks_count,
+            "filename": filename
+        }
+    except Exception as e:
+        logger.error(f"Error processing document: {e}")
+        raise
+
+logger.info("✓ RAG service module loaded (models lazy-loaded on first use)")

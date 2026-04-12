@@ -11,7 +11,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.middleware.gzip import GZIPMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 
 # Adjust path for internal imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
@@ -32,7 +32,7 @@ app = FastAPI(
 # ============================================================
 
 # GZIP compression
-app.add_middleware(GZIPMiddleware, minimum_size=1000)
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # Trusted host
 app.add_middleware(
