@@ -8,7 +8,9 @@ import { Upload, LogOut, FileText, CheckCircle, AlertCircle, Loader, BarChart3 }
 import toast from 'react-hot-toast';
 import axios from 'axios';
 
-const API_V1_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') + '/api/v1' || 'http://127.0.0.1:8000/api/v1';
+const API_ROOT =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') || 'http://127.0.0.1:8000';
+const API_V1_URL = `${API_ROOT}/api/v1`;
 
 export default function AdminPage() {
   const router = useRouter();

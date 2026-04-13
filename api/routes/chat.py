@@ -25,6 +25,7 @@ router = APIRouter()
 
 class ChatRequest(BaseModel):
     query: str
+    history: Optional[List[Dict[str, str]]] = []
 
 class Source(BaseModel):
     text: str
@@ -48,7 +49,7 @@ def verify_api_key(x_api_key: str = Header(None)):
 @router.post("/ask", response_model=ChatResponse)
 def ask_question(request: ChatRequest, api_key: str = Header(None, alias="x-api-key")):
     try:
-        result = ask_rag(request.query)
+        result = ask_rag(request.query, request.history)
         return ChatResponse(**result)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -22,15 +22,34 @@ EMBED_MODEL = settings.EMBED_MODEL
 TOP_K = settings.TOP_K
 GROQ_MODEL = settings.GROQ_MODEL
 
-SYSTEM_PROMPT = """You are the official AI Knowledge Assistant for Lovely Professional University (LPU).
+SYSTEM_PROMPT = """
+# ============================================================
+# LPU KNOWLEDGE ASSISTANT — SYSTEM PROMPT
+# ============================================================
 
-INSTRUCTIONS:
-1. Answer ONLY from provided context
-2. Cite sources with document names
-3. Be professional and clear
-4. If unsure, say so explicitly
+## IDENTITY
+You are the official AI Knowledge Assistant for Lovely Professional University (LPU).
+Your name is LPU Assistant. You speak with authority, clarity, and empathy.
 
-You represent LPU and must be accurate."""
+## RESPONSE FRAMEWORK
+1. **Direct Answer**: Answer the exact question asked in 1-2 sentences immediately.
+2. **Key Details**: Only if necessary, provide bullet points of exact rules.
+3. **Source**: Always end with: 📄 *Source: [document_name] | Category: [category]* (Unless answering casual chat/memory).
+
+## TONE AND LANGUAGE RULES
+✅ DO:
+- **BE EXTREMELY CONCISE.** Output ONLY what is strictly necessary.
+- Formally answer questions using ONLY the provided official context.
+- Casually respond to greetings or memory questions without explicitly referencing the system architecture.
+
+❌ DO NOT:
+- Do NOT output your internal reasoning or classification steps (e.g., do NOT say "CLASSIFICATION: CLASS A" or "RESPONSE:"). ONLY output the final human-readable text.
+- Do NOT provide massive essays of unasked details.
+- Do NOT say "Based on the context provided".
+
+## ESCALATION AND FALLBACK
+If the answer is NOT in the context: "I was unable to find specific information about this. Please contact the relevant university office directly."
+"""
 
 # Global instances - lazy loaded
 _chromadb_client = None
@@ -69,9 +88,9 @@ def get_groq_client():
     if _groq_client is None:
         try:
             from groq import Groq
-            api_key = os.getenv("GROQ_API_KEY", "")
+            api_key = getattr(settings, "GROQ_API_KEY", "").strip()
             if not api_key:
-                logger.warning("⚠ GROQ_API_KEY not set - AI responses will fail")
+                raise RuntimeError("GROQ_API_KEY is not set in settings or environment.")
             _groq_client = Groq(api_key=api_key)
             logger.info("✓ Groq client initialized")
         except Exception as e:
@@ -113,54 +132,128 @@ def retrieve_chunks(query: str, top_k: int = TOP_K) -> List[Dict[str, Any]]:
         logger.error(f"Error retrieving chunks: {e}")
         return []
 
-def ask_rag(query: str) -> Dict[str, Any]:
-    """Ask RAG system and get answer with sources."""
+def ask_rag(query: str, history: List[Dict[str, str]] = None) -> Dict[str, Any]:
+    """Ask RAG system and get answer with memory and structured routing."""
+    if history is None:
+        history = []
+        
     try:
-        # Retrieve context
-        chunks = retrieve_chunks(query)
-        if not chunks:
-            return {
-                "answer": "I could not find relevant information in the knowledge base.",
-                "sources": [],
-                "author_sig": "LPU Assistant v2.0",
-                "integrity": "no_context"
-            }
-        
-        # Build context
-        context = "\n\n".join([
-            f"[{c['source_file']}] {c['text']}"
-            for c in chunks
-        ])
-        
-        # Get response from Groq
         client = get_groq_client()
-        message = client.messages.create(
+        
+        # -------------------------------------------------------------
+        # STAGE 1: SILENT INTENT CLASSIFIER (No CoT Leakage Possible)
+        # -------------------------------------------------------------
+        # Build strict recent history string for classifier context
+        recent_context = "\n".join([f"{msg['role'].capitalize()}: {msg['content']}" for msg in history[-3:]])
+        
+        classifier_prompt = f"""You are an Intent Classifier and Query Reformulator for LPU Assistant.
+Analyze the conversation history and the latest query. First, classify the intent. Second, rewrite the query to be completely self-contained based on context (coreference resolution).
+
+INTENT RULES:
+- GENERAL (Greeting, casual, or asking about previous conversation memory / repeating).
+- POLICY (Any question about facts, rules, procedures, INCLUDING follow-up questions).
+- VAGUE (Absolute gibberish or a single unrelated keyword).
+
+Conversation context:
+{recent_context}
+
+Latest Query: {query}
+
+OUTPUT EXACTLY THIS FORMAT AND NOTHING ELSE:
+INTENT: [GENERAL, VAGUE, or POLICY]
+REWRITTEN: [your rewritten standalone query]"""
+
+        classifier_response = client.chat.completions.create(
             model=GROQ_MODEL,
-            max_tokens=1024,
-            system=SYSTEM_PROMPT,
-            messages=[
-                {
-                    "role": "user",
-                    "content": f"Context:\n{context}\n\nQuestion: {query}"
+            temperature=0.0,
+            max_tokens=60,
+            messages=[{"role": "user", "content": classifier_prompt}]
+        )
+        classifier_output = classifier_response.choices[0].message.content.strip()
+        
+        # Parse output safely
+        intent = "POLICY"
+        standalone_query = query
+        for line in classifier_output.split('\n'):
+            line = line.strip()
+            if line.upper().startswith("INTENT:"):
+                intent = line.upper().replace("INTENT:", "").strip()
+            elif line.upper().startswith("REWRITTEN:"):
+                standalone_query = line[10:].strip()
+                if not standalone_query:
+                    standalone_query = query
+        
+        # -------------------------------------------------------------
+        # STAGE 2: EXECUTION GENERATOR
+        # -------------------------------------------------------------
+        # Prepare context payload
+        messages_payload = [{"role": "system", "content": SYSTEM_PROMPT}]
+        
+        # Inject standard memory
+        for msg in history[-10:]:
+            messages_payload.append({"role": msg["role"], "content": msg["content"]})
+            
+        chunks = []
+        sources = []
+        
+        if "GENERAL" in intent or "GREETING" in intent:
+            # Bypass RAG entirely for speed and safety
+            messages_payload.append({"role": "user", "content": query})
+            
+        elif "VAGUE" in intent:
+            # Bypass RAG, just ask for clarification natively
+            messages_payload.append({"role": "user", "content": f"The user said '{query}'. Ask them politely to clarify what they want to know regarding LPU policies."})
+            
+        else:
+            # Execute standard RAG (Class C) using the REWRITTEN standalone query!
+            chunks = retrieve_chunks(standalone_query)
+            if not chunks:
+                return {
+                    "answer": "I could not find relevant information in the knowledge base.",
+                    "sources": [],
+                    "author_sig": "LPU Assistant v2.0",
+                    "integrity": "no_context"
                 }
+            
+            context = "\n\n".join([f"[{c['source_file']}] {c['text']}" for c in chunks])
+            messages_payload.append({
+                "role": "user", 
+                "content": f"Use the following official context strictly to answer the query.\n\nContext:\n{context}\n\nQuery: {query}"
+            })
+            
+            # Format sources for UI
+            sources = [
+                {
+                    "text": c["text"][:200],
+                    "source_file": c["source_file"],
+                    "category": c["category"],
+                    "chunk_index": c["chunk_index"],
+                    "token_count": len(c["text"].split()),
+                    "score": c["score"]
+                }
+                for c in chunks
             ]
+
+        # Generate Final Output
+        completion = client.chat.completions.create(
+            model=GROQ_MODEL,
+            temperature=0.2,
+            max_tokens=1024,
+            messages=messages_payload
         )
         
-        answer = message.content[0].text
+        answer = completion.choices[0].message.content.strip()
         
-        # Format sources
-        sources = [
-            {
-                "text": c["text"][:200],
-                "source_file": c["source_file"],
-                "category": c["category"],
-                "chunk_index": c["chunk_index"],
-                "token_count": len(c["text"].split()),
-                "score": c["score"]
-            }
-            for c in chunks
-        ]
-        
+        # In case the model still leaked something locally, scrub it.
+        import re
+        answer = re.sub(r'^(?:CLASSIFICATION|class|response)[^\n]*\n?', '', answer, flags=re.IGNORECASE | re.MULTILINE).strip()
+        if answer.upper().startswith("RESPONSE:"):
+            answer = answer[10:].strip()
+            
+        # Clear sources if the LLM output doesn't contain manual citations
+        if "Source" not in answer and "source" not in answer:
+            sources = []
+
         return {
             "answer": answer,
             "sources": sources,
@@ -181,23 +274,49 @@ def stream_rag(query: str) -> Generator[str, None, None]:
     try:
         chunks = retrieve_chunks(query)
         context = "\n\n".join([f"[{c['source_file']}] {c['text']}" for c in chunks])
+
+        yield json.dumps({
+            "type": "sources",
+            "content": [
+                {
+                    "text": c["text"][:200],
+                    "source_file": c["source_file"],
+                    "category": c["category"],
+                    "chunk_index": c["chunk_index"],
+                    "token_count": len(c["text"].split()),
+                    "score": c["score"],
+                }
+                for c in chunks
+            ]
+        }) + "\n"
         
         client = get_groq_client()
-        stream = client.messages.stream(
+        stream = client.chat.completions.create(
             model=GROQ_MODEL,
+            temperature=0.2,
             max_tokens=1024,
-            system=SYSTEM_PROMPT,
-            messages=[{
-                "role": "user",
-                "content": f"Context:\n{context}\n\nQuestion: {query}"
-            }]
+            stream=True,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {
+                    "role": "user",
+                    "content": f"Context (ONLY use if query is Class C):\n{context}\n\nQuestion: {query}\n\nCheck System Prompt routing first. If this is a greeting or casual text, just reply naturally and concisely. Otherwise, answer concisely based strictly on the context."
+                }
+            ]
         )
         
-        for text in stream.text_stream:
-            yield json.dumps({"token": text}) + "\n"
+        for chunk in stream:
+            delta = chunk.choices[0].delta.content
+            if delta:
+                yield json.dumps({"type": "content", "content": delta}) + "\n"
+
+        yield json.dumps({
+            "type": "end",
+            "content": {"author_sig": "LPU Assistant v2.0", "integrity": "verified"}
+        }) + "\n"
     except Exception as e:
         logger.error(f"Error in stream_rag: {e}")
-        yield json.dumps({"error": str(e)}) + "\n"
+        yield json.dumps({"type": "error", "content": str(e)}) + "\n"
 
 def process_uploaded_document(file_path: str, filename: str, category: str) -> Dict[str, Any]:
     """Process an uploaded document through the pipeline."""

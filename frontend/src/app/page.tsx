@@ -1,10 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles, AlertCircle, FileText, ChevronDown, ChevronUp, LogIn } from 'lucide-react';
+import { Send, Bot, User, Sparkles, AlertCircle, FileText, ChevronDown, ChevronUp } from 'lucide-react';
 import { useChat } from '@/hooks/useChat';
-import { useAuthStore } from '@/store/authStore';
-import { useRouter } from 'next/navigation';
 import { ChatMessage } from '@/lib/types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -12,8 +10,6 @@ import Skeleton from '@/components/ui/Skeleton';
 
 export default function Home() {
   const { messages, isLoading, error, sendMessage } = useChat();
-  const { user } = useAuthStore();
-  const router = useRouter();
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -40,7 +36,7 @@ export default function Home() {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl"></div>
       </div>
 
-      {/* Top Bar with Admin Link */}
+      {/* Top Bar */}
       <div className="sticky top-0 z-40 backdrop-blur-xl bg-slate-950/80 border-b border-slate-700/30">
         <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -49,27 +45,7 @@ export default function Home() {
             </div>
             <h1 className="font-bold text-white">LPU Assistant</h1>
           </div>
-          {user ? (
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-slate-400">{user.email}</span>
-              {user.is_admin && (
-                <button
-                  onClick={() => router.push('/admin')}
-                  className="px-3 py-1.5 text-sm bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition"
-                >
-                  Admin Panel
-                </button>
-              )}
-            </div>
-          ) : (
-            <button
-              onClick={() => router.push('/login')}
-              className="flex items-center gap-2 px-4 py-2 text-sm bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition"
-            >
-              <LogIn className="w-4 h-4" />
-              Admin Login
-            </button>
-          )}
+          <span className="text-xs text-slate-400">Official LPU Knowledge Assistant</span>
         </div>
       </div>
 
@@ -116,11 +92,11 @@ export default function Home() {
               <MessageBubble 
                 key={msg.id} 
                 message={msg} 
-                isStreaming={isLoading && idx === messages.length - 1} 
+                isStreaming={false} 
               />
             ))}
             
-            {isLoading && !messages[messages.length - 1]?.content && (
+            {isLoading && (
               <div className="flex gap-4 animate-in fade-in duration-300">
                 <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-600 to-orange-500 flex items-center justify-center shrink-0 shadow-lg shadow-orange-600/20">
                   <Bot className="w-5 h-5 text-white" />
@@ -129,11 +105,6 @@ export default function Home() {
                   <div className="bg-slate-800/40 backdrop-blur rounded-2xl rounded-tl-sm px-5 py-4 flex items-center gap-2 w-fit border border-slate-700/50">
                     <Sparkles className="w-4 h-4 text-orange-500 animate-pulse" />
                     <span className="text-slate-300 text-sm animate-pulse">Analyzing knowledge base...</span>
-                  </div>
-                  <div className="max-w-[85%] space-y-2 pl-2">
-                    <Skeleton className="h-4 w-[90%]" />
-                    <Skeleton className="h-4 w-[75%]" />
-                    <Skeleton className="h-4 w-[40%]" />
                   </div>
                 </div>
               </div>
