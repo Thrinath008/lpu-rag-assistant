@@ -1,6 +1,6 @@
 # ============================================================
 # Project : LPU RAG Knowledge Assistant
-# Author  : Thrinath
+# Authors : Thrinath, Shambhavi, Arshad
 # Year    : 2026
 # Module  : main.py
 # ============================================================
@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from api.core.config import settings
 from api.core.logging import logger
-from api.routes import health, chat, admin, auth
+from api.routes import health, chat, admin, auth, session
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -106,6 +106,7 @@ async def root():
 app.include_router(health, prefix="/api")
 app.include_router(auth, prefix="/api/v1/auth")
 app.include_router(chat, prefix=settings.API_V1_STR)
+app.include_router(session, prefix=settings.API_V1_STR)
 app.include_router(admin, prefix=settings.API_V1_STR)
 
 if __name__ == "__main__":

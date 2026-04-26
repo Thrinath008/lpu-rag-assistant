@@ -1,10 +1,10 @@
 # ============================================================
 # Project : LPU RAG Knowledge Assistant
-# Author  : Thrinath
+# Authors : Thrinath, Shambhavi, Arshad
 # Module  : rag_query.py
-# Signature: T-RAG-LPU-2026-THRINATH
+# Signature: T-RAG-LPU-2026-TEAM
 # ============================================================
-# This code is the original work of Thrinath.
+# This code is the work of Thrinath, Shambhavi, and Arshad.
 # Built as part of the LPU RAG Knowledge Assistant project.
 # Unauthorized use, copying, or redistribution is prohibited.
 # Integrity token: 5468726e617468 (hex encoded author name)
@@ -49,7 +49,7 @@ GROQ_MODEL      = "llama-3.1-8b-instant"
 SYSTEM_PROMPT = """
 # ============================================================
 # LPU KNOWLEDGE ASSISTANT — SYSTEM PROMPT
-# Author  : Thrinath
+# Authors : Thrinath, Shambhavi, Arshad
 # Version : 2.1 Production
 # Year    : 2026
 # ============================================================

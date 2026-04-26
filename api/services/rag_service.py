@@ -1,339 +1,177 @@
 # ============================================================
 # Project : LPU RAG Knowledge Assistant
-# Author  : Thrinath
+# Authors : Thrinath, Shambhavi, Arshad
 # Year    : 2026
 # Module  : rag_service.py
+# Phase   : 3 — Memory + Intelligence + API + Frontend
 # ============================================================
-import os
 import sys
-from typing import List, Dict, Any, Generator
-from tenacity import retry, stop_after_attempt, wait_exponential
-from functools import lru_cache
-import time
+import os
 import json
+import datetime
+import logging
+from typing import Dict, Any, Generator
+
+try:
+    from scripts._watermark import _stamp
+    _MODULE_STAMP = _stamp("rag_service")
+except ImportError:
+    pass
+
+import chromadb
 
 from api.core.config import settings
-from api.core.logging import logger
+from api.prompts.system_prompt import SYSTEM_PROMPT
 
-# Constants from settings
-CHROMA_DIR = settings.CHROMA_DIR
-COLLECTION_NAME = settings.COLLECTION_NAME
-EMBED_MODEL = settings.EMBED_MODEL
-TOP_K = settings.TOP_K
-GROQ_MODEL = settings.GROQ_MODEL
+from api.services.memory_service import memory_service
+from api.services.rewriter_service import rewriter_service
+from api.services.classifier_service import classifier_service
+from api.services.confidence_service import confidence_service
+from api.services.llm_service import llm_service
 
-SYSTEM_PROMPT = """
-# ============================================================
-# LPU KNOWLEDGE ASSISTANT — SYSTEM PROMPT
-# ============================================================
+logger = logging.getLogger(__name__)
 
-## IDENTITY
-You are the official AI Knowledge Assistant for Lovely Professional University (LPU).
-Your name is LPU Assistant. You speak with authority, clarity, and empathy.
+# Initialize ChromaDB client lazily
+_chroma_client = None
+_collection = None
 
-## RESPONSE FRAMEWORK
-1. **Direct Answer**: Answer the exact question asked in 1-2 sentences immediately.
-2. **Key Details**: Only if necessary, provide bullet points of exact rules.
-3. **Source**: Always end with: 📄 *Source: [document_name] | Category: [category]* (Unless answering casual chat/memory).
-
-## TONE AND LANGUAGE RULES
-✅ DO:
-- **BE EXTREMELY CONCISE.** Output ONLY what is strictly necessary.
-- Formally answer questions using ONLY the provided official context.
-- Casually respond to greetings or memory questions without explicitly referencing the system architecture.
-
-❌ DO NOT:
-- Do NOT output your internal reasoning or classification steps (e.g., do NOT say "CLASSIFICATION: CLASS A" or "RESPONSE:"). ONLY output the final human-readable text.
-- Do NOT provide massive essays of unasked details.
-- Do NOT say "Based on the context provided".
-
-## ESCALATION AND FALLBACK
-If the answer is NOT in the context: "I was unable to find specific information about this. Please contact the relevant university office directly."
-"""
-
-# Global instances - lazy loaded
-_chromadb_client = None
-_embed_model = None
-_groq_client = None
-
-def get_chromadb():
-    """Lazy-load ChromaDB client."""
-    global _chromadb_client
-    if _chromadb_client is None:
+def get_chroma_collection():
+    global _chroma_client, _collection
+    if not _chroma_client:
         try:
-            import chromadb
-            _chromadb_client = chromadb.PersistentClient(path=CHROMA_DIR)
-            logger.info("✓ ChromaDB initialized")
+            _chroma_client = chromadb.PersistentClient(path=settings.CHROMA_DIR)
+            _collection = _chroma_client.get_collection(name=settings.COLLECTION_NAME)
         except Exception as e:
-            logger.error(f"Failed to initialize ChromaDB: {e}")
-            raise
-    return _chromadb_client
+            logger.error(f"Failed to get ChromaDB collection: {e}")
+            _collection = None
+    return _collection
 
-def get_embedder():
-    """Lazy-load SentenceTransformer."""
-    global _embed_model
-    if _embed_model is None:
-        try:
-            from sentence_transformers import SentenceTransformer
-            _embed_model = SentenceTransformer(EMBED_MODEL)
-            logger.info(f"✓ Embedding model {EMBED_MODEL} loaded")
-        except Exception as e:
-            logger.error(f"Failed to load embedding model: {e}")
-            raise
-    return _embed_model
+def retrieve_chunks(query: str, category_filter: dict = None) -> list:
+    """Retrieves context chunks from Vector DB."""
+    collection = get_chroma_collection()
+    if not collection:
+        return []
 
-def get_groq_client():
-    """Lazy-load Groq client."""
-    global _groq_client
-    if _groq_client is None:
-        try:
-            from groq import Groq
-            api_key = getattr(settings, "GROQ_API_KEY", "").strip()
-            if not api_key:
-                raise RuntimeError("GROQ_API_KEY is not set in settings or environment.")
-            _groq_client = Groq(api_key=api_key)
-            logger.info("✓ Groq client initialized")
-        except Exception as e:
-            logger.error(f"Failed to initialize Groq: {e}")
-            raise
-    return _groq_client
-
-def retrieve_chunks(query: str, top_k: int = TOP_K) -> List[Dict[str, Any]]:
-    """Retrieve similar chunks from ChromaDB."""
     try:
-        client = get_chromadb()
-        collection = client.get_collection(COLLECTION_NAME)
-        
-        embedder = get_embedder()
-        query_embedding = embedder.encode(query).tolist()
-        
         results = collection.query(
-            query_embeddings=[query_embedding],
-            n_results=top_k,
-            include=["documents", "metadatas", "distances"]
+            query_texts=[query],
+            n_results=settings.TOP_K,
+            where=category_filter
         )
         
         chunks = []
-        for i, doc in enumerate(results["documents"][0]):
-            metadata = results["metadatas"][0][i]
-            distance = results["distances"][0][i]
-            similarity = 1 - (distance / 2)
-            
-            chunks.append({
-                "text": doc,
-                "source_file": metadata.get("source_file", "unknown"),
-                "category": metadata.get("category", "unknown"),
-                "chunk_index": metadata.get("chunk_index", 0),
-                "score": max(0, similarity)
-            })
+        if results and results.get("documents") and results["documents"][0]:
+            for i, doc in enumerate(results["documents"][0]):
+                metadata = results["metadatas"][0][i]
+                distance = results["distances"][0][i]
+                # Convert L2 distance to similarity score
+                similarity = max(0.0, 1 - (distance / 2))
+                
+                chunks.append({
+                    "text": doc,
+                    "source_file": metadata.get("source_file", "unknown"),
+                    "category": metadata.get("category", "unknown"),
+                    "chunk_index": metadata.get("chunk_index", 0),
+                    "score": similarity
+                })
         
         return chunks
     except Exception as e:
-        logger.error(f"Error retrieving chunks: {e}")
+        logger.error(f"Error retrieving from ChromaDB: {e}")
         return []
 
-def ask_rag(query: str, history: List[Dict[str, str]] = None) -> Dict[str, Any]:
-    """Ask RAG system and get answer with memory and structured routing."""
-    if history is None:
-        history = []
-        
+def format_sources_for_ui(chunks: list) -> list:
+    sources = []
+    for c in chunks:
+        sources.append({
+            "text": c["text"][:200],
+            "source_file": c["source_file"],
+            "category": c["category"],
+            "chunk_index": c["chunk_index"],
+            "token_count": len(c["text"].split()),
+            "score": c["score"]
+        })
+    return sources
+
+def ask_rag(query: str, session_id: str) -> Dict[str, Any]:
+    """
+    Executes the full Phase 3 RAG Pipeline.
+    """
     try:
-        client = get_groq_client()
+        # 1. Load session history
+        history = memory_service.get_history(session_id)
         
-        # -------------------------------------------------------------
-        # STAGE 1: SILENT INTENT CLASSIFIER (No CoT Leakage Possible)
-        # -------------------------------------------------------------
-        # Build strict recent history string for classifier context
-        recent_context = "\n".join([f"{msg['role'].capitalize()}: {msg['content']}" for msg in history[-3:]])
+        # 2. Rewrite query
+        rewritten_query = rewriter_service.rewrite(query=query, history=history)
         
-        classifier_prompt = f"""You are an Intent Classifier and Query Reformulator for LPU Assistant.
-Analyze the conversation history and the latest query. First, classify the intent. Second, rewrite the query to be completely self-contained based on context (coreference resolution).
-
-INTENT RULES:
-- GENERAL (Greeting, casual, or asking about previous conversation memory / repeating).
-- POLICY (Any question about facts, rules, procedures, INCLUDING follow-up questions).
-- VAGUE (Absolute gibberish or a single unrelated keyword).
-
-Conversation context:
-{recent_context}
-
-Latest Query: {query}
-
-OUTPUT EXACTLY THIS FORMAT AND NOTHING ELSE:
-INTENT: [GENERAL, VAGUE, or POLICY]
-REWRITTEN: [your rewritten standalone query]"""
-
-        classifier_response = client.chat.completions.create(
-            model=GROQ_MODEL,
-            temperature=0.0,
-            max_tokens=60,
-            messages=[{"role": "user", "content": classifier_prompt}]
-        )
-        classifier_output = classifier_response.choices[0].message.content.strip()
+        # 3. Classify
+        category = classifier_service.classify(query=rewritten_query)
+        cat_filter = classifier_service.get_category_filter(category=category)
         
-        # Parse output safely
-        intent = "POLICY"
-        standalone_query = query
-        for line in classifier_output.split('\n'):
-            line = line.strip()
-            if line.upper().startswith("INTENT:"):
-                intent = line.upper().replace("INTENT:", "").strip()
-            elif line.upper().startswith("REWRITTEN:"):
-                standalone_query = line[10:].strip()
-                if not standalone_query:
-                    standalone_query = query
+        # 4. Retrieve
+        chunks = retrieve_chunks(query=rewritten_query, category_filter=cat_filter)
         
-        # -------------------------------------------------------------
-        # STAGE 2: EXECUTION GENERATOR
-        # -------------------------------------------------------------
-        # Prepare context payload
-        messages_payload = [{"role": "system", "content": SYSTEM_PROMPT}]
+        # 5. Score Results
+        confidence_data = confidence_service.score(chunks=chunks, category=category)
         
-        # Inject standard memory
-        for msg in history[-10:]:
-            messages_payload.append({"role": msg["role"], "content": msg["content"]})
-            
-        chunks = []
-        sources = []
-        
-        if "GENERAL" in intent or "GREETING" in intent:
-            # Bypass RAG entirely for speed and safety
-            messages_payload.append({"role": "user", "content": query})
-            
-        elif "VAGUE" in intent:
-            # Bypass RAG, just ask for clarification natively
-            messages_payload.append({"role": "user", "content": f"The user said '{query}'. Ask them politely to clarify what they want to know regarding LPU policies."})
-            
-        else:
-            # Execute standard RAG (Class C) using the REWRITTEN standalone query!
-            chunks = retrieve_chunks(standalone_query)
-            if not chunks:
-                return {
-                    "answer": "I could not find relevant information in the knowledge base.",
-                    "sources": [],
-                    "author_sig": "LPU Assistant v2.0",
-                    "integrity": "no_context"
-                }
-            
-            context = "\n\n".join([f"[{c['source_file']}] {c['text']}" for c in chunks])
-            messages_payload.append({
-                "role": "user", 
-                "content": f"Use the following official context strictly to answer the query.\n\nContext:\n{context}\n\nQuery: {query}"
-            })
-            
-            # Format sources for UI
-            sources = [
-                {
-                    "text": c["text"][:200],
-                    "source_file": c["source_file"],
-                    "category": c["category"],
-                    "chunk_index": c["chunk_index"],
-                    "token_count": len(c["text"].split()),
-                    "score": c["score"]
-                }
-                for c in chunks
-            ]
-
-        # Generate Final Output
-        completion = client.chat.completions.create(
-            model=GROQ_MODEL,
-            temperature=0.2,
-            max_tokens=1024,
-            messages=messages_payload
-        )
-        
-        answer = completion.choices[0].message.content.strip()
-        
-        # In case the model still leaked something locally, scrub it.
-        import re
-        answer = re.sub(r'^(?:CLASSIFICATION|class|response)[^\n]*\n?', '', answer, flags=re.IGNORECASE | re.MULTILINE).strip()
-        if answer.upper().startswith("RESPONSE:"):
-            answer = answer[10:].strip()
-            
-        # Clear sources if the LLM output doesn't contain manual citations
-        if "Source" not in answer and "source" not in answer:
+        # 6. Off-topic handling
+        # Only block if it matched a category but had zero relation.
+        # Natively general/greeting queries don't hit off topic logic aggressively.
+        if category != "general" and confidence_service.is_off_topic(chunks=chunks):
+            answer = confidence_data["message"]
             sources = []
-
+        else:
+            # 7. Build context string
+            context_string = ""
+            if chunks and not confidence_service.is_off_topic(chunks=chunks):
+                context_string = "\n\n".join([f"[{c['source_file']}] {c['text']}" for c in chunks])
+            
+            # 8. Call LLM Wrapper
+            answer = llm_service.generate(
+                system_prompt=SYSTEM_PROMPT,
+                history=history,
+                context=context_string,
+                query=query
+            )
+            
+            # Only send sources if LLM actively parsed metadata and confidence was above LOW
+            sources = format_sources_for_ui(chunks)
+            if ("Source" not in answer and "source" not in answer) or confidence_data["level"] == "LOW":
+                sources = []
+        
+        # 9. Save Interaction to Memory
+        memory_service.add_message(session_id=session_id, role="user", content=query)
+        memory_service.add_message(session_id=session_id, role="assistant", content=answer)
+        
+        # 10. Return full dict
         return {
             "answer": answer,
             "sources": sources,
-            "author_sig": "LPU Assistant v2.0",
-            "integrity": "verified"
+            "original_query": query,
+            "rewritten_query": rewritten_query,
+            "category": category,
+            "confidence": confidence_data,
+            "session_id": session_id,
+            "model": settings.GROQ_MODEL,
+            "author": "LPU Assistant v3.0",
+            "timestamp": datetime.datetime.now().isoformat()
         }
+        
     except Exception as e:
-        logger.error(f"Error in ask_rag: {e}")
+        logger.error(f"Error in ask_rag: {e}", exc_info=True)
         return {
-            "answer": f"Error: {str(e)}",
+            "answer": f"System error processing request: {str(e)}",
             "sources": [],
-            "author_sig": "LPU Assistant v2.0",
-            "integrity": "error"
+            "original_query": query,
+            "rewritten_query": query,
+            "category": "error",
+            "confidence": confidence_service.score([], "none"),
+            "session_id": session_id,
+            "model": settings.GROQ_MODEL,
+            "author": "LPU Assistant v3.0",
+            "timestamp": datetime.datetime.now().isoformat()
         }
 
-def stream_rag(query: str) -> Generator[str, None, None]:
-    """Stream RAG responses."""
-    try:
-        chunks = retrieve_chunks(query)
-        context = "\n\n".join([f"[{c['source_file']}] {c['text']}" for c in chunks])
-
-        yield json.dumps({
-            "type": "sources",
-            "content": [
-                {
-                    "text": c["text"][:200],
-                    "source_file": c["source_file"],
-                    "category": c["category"],
-                    "chunk_index": c["chunk_index"],
-                    "token_count": len(c["text"].split()),
-                    "score": c["score"],
-                }
-                for c in chunks
-            ]
-        }) + "\n"
-        
-        client = get_groq_client()
-        stream = client.chat.completions.create(
-            model=GROQ_MODEL,
-            temperature=0.2,
-            max_tokens=1024,
-            stream=True,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {
-                    "role": "user",
-                    "content": f"Context (ONLY use if query is Class C):\n{context}\n\nQuestion: {query}\n\nCheck System Prompt routing first. If this is a greeting or casual text, just reply naturally and concisely. Otherwise, answer concisely based strictly on the context."
-                }
-            ]
-        )
-        
-        for chunk in stream:
-            delta = chunk.choices[0].delta.content
-            if delta:
-                yield json.dumps({"type": "content", "content": delta}) + "\n"
-
-        yield json.dumps({
-            "type": "end",
-            "content": {"author_sig": "LPU Assistant v2.0", "integrity": "verified"}
-        }) + "\n"
-    except Exception as e:
-        logger.error(f"Error in stream_rag: {e}")
-        yield json.dumps({"type": "error", "content": str(e)}) + "\n"
-
-def process_uploaded_document(file_path: str, filename: str, category: str) -> Dict[str, Any]:
-    """Process an uploaded document through the pipeline."""
-    try:
-        # Basic processing - in production, use full pipeline
-        with open(file_path, 'r') as f:
-            content = f.read()
-        
-        chunks_count = len(content.split("\n\n"))
-        
-        return {
-            "status": "success",
-            "chunks_created": chunks_count,
-            "filename": filename
-        }
-    except Exception as e:
-        logger.error(f"Error processing document: {e}")
-        raise
-
-logger.info("✓ RAG service module loaded (models lazy-loaded on first use)")
+def stream_rag(query: str, session_id: str) -> Generator[str, None, None]:
+    """Streaming is deprecated temporarily to enforce robust memory orchestration checks. Using ask_rag natively."""
+    yield json.dumps({"error": "Streaming disabled in Phase 3. Use standard /ask endpoint."}) + "\n"

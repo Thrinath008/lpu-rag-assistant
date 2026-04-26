@@ -1,6 +1,6 @@
 # ============================================================
 # Project : LPU RAG Knowledge Assistant
-# Author  : Thrinath
+# Authors : Thrinath, Shambhavi, Arshad
 # Year    : 2026
 # Module  : auth.py - Authentication Routes
 # ============================================================

@@ -1,6 +1,6 @@
 # ============================================================
 # Project : LPU RAG Knowledge Assistant
-# Author  : Thrinath
+# Authors : Thrinath, Shambhavi, Arshad
 # Year    : 2026
 # Module  : health.py
 # ============================================================
@@ -28,7 +28,7 @@ def get_health():
         vector_db="connected",
         total_chunks=68,
         embedding_model="all-MiniLM-L6-v2",
-        author="Thrinath",
+        author="Thrinath, Shambhavi, Arshad",
         version="2.0",
         year="2026"
     )

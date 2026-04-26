@@ -8,6 +8,20 @@ export const useChat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Parse UUID statelessly
+  const getSessionId = () => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('chat_session_id');
+    }
+    return null;
+  };
+
+  const saveSessionId = (id: string) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('chat_session_id', id);
+    }
+  };
+
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim()) return;
 
@@ -21,29 +35,26 @@ export const useChat = () => {
     setIsLoading(true);
     setError(null);
 
-    // Extract conversation history to send to backend (limit to last 10 messages for context window)
-    const historyPayload = messages.slice(-10).map(msg => ({
-      role: msg.role,
-      content: msg.content
-    }));
-
     try {
-      const response = await chatApi.ask(content, historyPayload);
+      const currentSessionId = getSessionId();
+      const response = await chatApi.ask(content, currentSessionId);
+      
+      // Cache session natively
+      if (response.session_id) {
+        saveSessionId(response.session_id);
+      }
+
       const answer = response.answer?.trim() || 'No response received from assistant.';
 
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: answer,
-        sources: response.sources || []
+        sources: response.sources || [],
+        confidence: response.confidence
       }]);
 
-      if (response.integrity === 'error') {
-        setError(answer);
-        toast.error(answer);
-      } else {
-        toast.success("Response complete");
-      }
+      toast.success("Response complete");
     } catch (err: any) {
       const errorChatMessage = err.message || "Failed to get an answer from the assistant.";
       setError(errorChatMessage);

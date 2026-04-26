@@ -1,6 +1,6 @@
 # ============================================================
 # Project : LPU RAG Knowledge Assistant
-# Author  : Thrinath
+# Authors : Thrinath, Shambhavi, Arshad
 # Year    : 2026
 # Module  : admin.py
 # ============================================================
@@ -24,11 +24,7 @@ from api.core.auth import User
 
 router = APIRouter()
 
-class ProcessResponse(BaseModel):
-    status: str
-    message: str
-    chunks_created: int
-    category: str
+from api.models.admin_models import ProcessResponse
 
 @router.post("/admin/upload", response_model=ProcessResponse)
 async def upload_document(

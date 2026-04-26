@@ -341,7 +341,7 @@ python -c "import fastapi; print(fastapi.__version__)"
 
 ## 📄 License
 
-Proprietary - All rights reserved. © 2026 Thrinath
+Proprietary - All rights reserved. © 2026 Thrinath, Shambhavi, Arshad
 
 ---
 
