@@ -1,8 +1,19 @@
+export interface ConfidenceResult {
+  level: string;
+  label: string;
+  best_score: number;
+  avg_score: number;
+  strong_chunks: number;
+  message: string;
+  color: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   sources?: Source[];
+  confidence?: ConfidenceResult;
 }
 
 export interface Source {
@@ -17,8 +28,14 @@ export interface Source {
 export interface ChatResponse {
   answer: string;
   sources: Source[];
-  author_sig: string;
-  integrity: string;
+  original_query: string;
+  rewritten_query: string;
+  category: string;
+  confidence: ConfidenceResult;
+  session_id: string;
+  model: string;
+  author: string;
+  timestamp: string;
 }
 
 export interface UploadResponse {

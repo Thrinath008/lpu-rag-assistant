@@ -29,6 +29,11 @@ class Settings(BaseSettings):
     GROQ_MODEL: str = "llama-3.1-8b-instant"
     EMBED_MODEL: str = "all-MiniLM-L6-v2"
     TOP_K: int = 5
+    MAX_TOKENS: int = 1024
+    TEMPERATURE: float = 0.2
+    MAX_HISTORY: int = 10
+    SESSION_TTL_HRS: int = 2
+    MAX_UPLOAD_MB: int = 10
     
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

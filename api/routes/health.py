@@ -1,6 +1,6 @@
 # ============================================================
 # Project : LPU RAG Knowledge Assistant
-# Author  : Thrinath
+# Authors : Thrinath
 # Year    : 2026
 # Module  : health.py
 # ============================================================

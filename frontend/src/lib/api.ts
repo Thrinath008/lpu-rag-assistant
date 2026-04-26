@@ -19,21 +19,27 @@ const API_KEY = "lpu-rag-dev-key";
 const ADMIN_KEY = "lpu-admin-master-key";
 
 export const chatApi = {
-  ask: async (query: string, history: {role: string, content: string}[] = []): Promise<ChatResponse> => {
+  ask: async (query: string, session_id?: string | null): Promise<ChatResponse> => {
+    const payload: any = { query };
+    if (session_id) payload.session_id = session_id;
+
     const response = await v1Client.post<ChatResponse>('/ask', 
-      { query, history },
+      payload,
       { headers: { 'x-api-key': API_KEY } }
     );
     return response.data;
   },
-  askStream: async (query: string, history: {role: string, content: string}[] = []): Promise<Response> => {
+  askStream: async (query: string, session_id?: string | null): Promise<Response> => {
+    const payload: any = { query };
+    if (session_id) payload.session_id = session_id;
+
     const response = await fetch(`${API_V1_URL}/ask/stream`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': API_KEY,
       },
-      body: JSON.stringify({ query, history }),
+      body: JSON.stringify(payload),
     });
     return response;
   }
