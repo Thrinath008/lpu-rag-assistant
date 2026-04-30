@@ -1,0 +1,109 @@
+TITLE LPU Attendance Marking Policy for Late or Changed Course Registration
+
+OVERVIEW This policy defines how attendance is calculated for students whose course registration is initiated or modified after the start of classes. It is applicable to both Indian and international students, covering fresh admission students, continuing students, program change cases, backlog course registrations, and non-promoted students whose status is activated mid-term. This policy is effective from the Spring Term of academic session 2018–19.
+
+KEY RULES AND POLICY DETAILS
+
+General Principles
+
+For new admission or freshmen students: Attendance is calculated from the start of classes or the last date of admission, whichever is later.
+
+For continuing students: If courses are registered late for any approved reason, attendance is calculated from the first day of the start of classes for that particular program.
+
+Continuous Assessment (CA) for students affected by late registration is decided on a case-by-case basis as per university policy.
+
+PROCEDURE — ATTENDANCE CALCULATION RULES BY CATEGORY
+
+Category 1 — Freshmen or New Admission Students Admitted After the Last Date of Admission (Under Exceptional Circumstances)
+
+All attendance from the start of classes or the last date of admission (whichever is later) up to the date of course registration is marked as Absent.
+
+Category 2 — Freshmen Students Who Changed Their Program Intermediately in the First Term
+
+Sub-case A: All courses in the new program are different from the old program
+
+If the student attended no classes in the old program: All previous attendance from the start of classes or last date of admission up to the date of registration in the new program is marked as Absent.
+
+If the student attended classes in the old program: The total number of lectures attended by the student in the old program is counted and transferred to the new program registration.
+
+Sub-case B: Some courses in the new program are the same as in the old program
+
+If the student attended no classes in the old program: All previous attendance up to the date of registration in the new program is marked as Absent.
+
+If the student attended classes in the old program:
+
+Attendance for common courses is transferred without any change.
+
+For courses that are not common, the number of lectures attended by the student in those courses under the old program is counted and the same count is transferred to the new program.
+
+Category 3 — Freshmen Students Whose Elective Courses Are Registered After Joining the University
+
+Attendance for all such elective courses is calculated from the date of registration of those courses.
+
+The Academic Operations Cell (AOC) is responsible for ensuring attendance rectification for affected students.
+
+Category 4 — Continuing Students Whose Course Registration Is Changed
+
+Sub-case A: All courses under the new registration are completely different from the previously registered courses
+
+If the student attended no classes under the old registration: All previous attendance from the start of the session up to the date of new registration is marked as Absent.
+
+If the student attended classes under the old registration: The total number of lectures attended under the old registration is counted and the same count is transferred to the new registration.
+
+Sub-case B: Some courses under the new registration are common and the rest are new
+
+If the student attended no classes under the old registration: All previous attendance up to the date of new registration is marked as Absent.
+
+If the student attended classes under the old registration:
+
+Attendance for common courses is transferred without any change.
+
+For courses that are not common, the number of lectures attended by the student in those courses under the old registration is counted and the same count is transferred to the new registration.
+
+Category 5 — Non-Promoted Students Whose Status Is Marked Active After the Start of Term
+
+Attendance for all such students is calculated from the date of registration of their courses.
+
+Category 6 — Continuing Students and Freshmen Migration Cases Registering in Backlog Courses
+
+Attendance for backlog courses is calculated from the date of registration of those backlog courses, for both continuing students and freshmen migration cases.
+
+ATTENDANCE RECTIFICATION — CASES WHERE THE STUDENT IS NOT AT FAULT
+
+If a student's registration is changed due to circumstances beyond their control — such as a modification in the program scheme or cancellation of On-the-Job Training (OJT) or industrial training — the following process applies:
+
+The concerned Academic Operations Cell (AOC) or Training and Placement Coordinator (TPC), as applicable, is responsible for initiating the attendance rectification.
+
+The AOC or TPC forwards the case to the Division of Academic Affairs (DAA) with valid reasons.
+
+DAA reviews the case and forwards it to the Division of InfoTech for rectification, after recommendation by the Head of DAA.
+
+SUMMARY TABLE — ATTENDANCE START DATE BY CATEGORY
+
+CONTACT AND RESPONSIBLE OFFICES
+
+Academic Operations Cell (AOC): Responsible for attendance rectification in cases involving elective registrations and changes not caused by the student.
+
+Training and Placement Coordinator (TPC): Responsible for initiating rectification in training-related registration change cases.
+
+Division of Academic Affairs (DAA): Reviews and approves attendance rectification requests and forwards them for system-level changes.
+
+Division of InfoTech: Executes system-level attendance rectification after receiving recommendations from DAA.
+
+COMMON QUESTIONS STUDENTS MAY ASK
+
+From which date is attendance calculated if a student is admitted after the last date of admission?
+
+How is attendance handled if a student changes their program after classes have already started?
+
+What happens to the attendance of a continuing student whose courses are changed mid-term?
+
+From which date is attendance calculated for backlog courses?
+
+If my course registration was changed due to a university decision and not my fault, how do I get my attendance corrected?
+
+How is attendance calculated for elective courses that are registered after a student joins the university?
+
+What is the attendance start date for a non-promoted student who is activated after the start of a term?
+
+Who is responsible for getting attendance rectified if my registration was changed due to cancellation of OJT?

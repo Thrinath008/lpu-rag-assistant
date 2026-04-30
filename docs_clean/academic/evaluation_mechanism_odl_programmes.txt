@@ -1,0 +1,95 @@
+TITLE LPU Evaluation Mechanism for ODL (Open and Distance Learning) Programmes
+
+OVERVIEW This policy defines the evaluation framework applicable to students enrolled in Open and Distance Learning (ODL) programmes at Lovely Professional University, effective from the academic session 2024–25. It outlines the components of assessment, their respective weightages, the process for assignments and examinations, and the passing criteria required to successfully complete a course and the programme.
+
+KEY RULES AND POLICY DETAILS
+
+Components of Evaluation
+
+All ODL programme courses are evaluated using a combination of the following components:
+
+Continuous Assessment (CA): Based on written assignments submitted by the learner.
+
+End-Term Examination (ETE): Applicable to theory-based courses, conducted as per the university's scheduled examination timetable.
+
+End-Term Practical or Project (ETP): Applicable to practical, project, term paper, dissertation, and Community Development Project (CDP)-based courses.
+
+Evaluation Weightage by Course Category
+
+CONTINUOUS ASSESSMENT (CA) — ASSIGNMENT PROCESS
+
+CA for ODL learners is assessed entirely through assignments.
+
+Assignments are made available to learners through the Learning Management System (LPU e-Connect) and the LPU Touch mobile application.
+
+Learners must download and print the assignment questions, write answers in their own handwriting within the prescribed space, scan the completed assignment, and upload it through the CA submission interface on e-Connect within the stipulated submission schedule.
+
+Assignment Scheme by Course Credit Value
+
+PASSING CRITERIA
+
+Students must meet the following minimum conditions to achieve a pass grade in any course:
+
+Theory Only Course
+
+Minimum 30% marks in ETE, and
+
+Minimum 40% overall when CA and ETE marks are combined.
+
+Theory and Practical Combined Course
+
+Minimum 30% marks separately in both ETE and ETP, and
+
+Minimum 40% overall across all components (CA, ETE, and ETP) combined.
+
+Practical Only Course
+
+Minimum 30% marks in ETP, and
+
+Minimum 40% overall when ETP and CA are combined.
+
+Term Paper, Dissertation, or Project-Based Course
+
+Minimum 40% marks in CA, and
+
+Minimum 40% marks in ETP.
+
+Community Development Project (CDP)
+
+Minimum 40% marks in ETP.
+
+CGPA Requirement for Programme Completion
+
+In addition to passing individual courses, learners must achieve a minimum overall CGPA of 5.0 to successfully complete the programme.
+
+The conversion factor from CGPA to percentage is: CGPA × 10 = Percentage.
+
+CONTACT AND RESPONSIBLE OFFICE
+
+LPU e-Connect (Learning Management System): Platform for accessing and submitting assignments.
+
+LPU Touch Mobile Application: Alternative platform for accessing assignment materials.
+
+Division of Examinations: Responsible for conducting End-Term Examinations as per the official schedule.
+
+COMMON QUESTIONS STUDENTS MAY ASK
+
+What is the minimum attendance or assignment submission requirement for ODL students at LPU?
+
+How are assignments submitted for Continuous Assessment in ODL programmes?
+
+What is the passing criteria for a theory and practical combined course in an ODL programme?
+
+How many assignments does an ODL student need to submit for a 6-credit course?
+
+What is the minimum CGPA required to complete an ODL programme at LPU?
+
+How is the CGPA converted to a percentage for ODL students?
+
+What is the weightage of End-Term Examination in a theory-only ODL course?
+
+What happens if an ODL student fails to meet the minimum marks in ETE or ETP?
+
+How is a Community Development Project evaluated in ODL programmes?
+
+Where can ODL students access their assignment questions?
