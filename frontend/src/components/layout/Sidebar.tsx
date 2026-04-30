@@ -1,48 +1,65 @@
-import Link from 'next/link';
-import { MessageSquare, UploadCloud, Database, Activity, Compass } from 'lucide-react';
+'use client';
 
-export default function Sidebar() {
+import React from 'react';
+import { MessageSquare, History, Plus, Settings, LogOut, Github } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+export function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (val: boolean) => void }) {
   return (
-    <aside id="logo-sidebar" className="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform -translate-x-full bg-slate-900 border-r border-slate-800 sm:translate-x-0" aria-label="Sidebar">
-      <div className="h-full px-3 pb-4 overflow-y-auto bg-slate-900">
-        <ul className="space-y-2 font-medium mt-4">
-          <MenuSection title="KNOWLEDGE HUB" />
-          <MenuItem href="/" icon={<MessageSquare size={18} />} label="Ask Query" active />
-          <MenuItem href="/history" icon={<Compass size={18} />} label="History" />
+    <motion.aside
+      initial={false}
+      animate={{ width: isOpen ? 280 : 0, opacity: isOpen ? 1 : 0 }}
+      className="h-screen glass-panel border-r border-white/5 overflow-hidden flex flex-col shrink-0"
+    >
+      <div className="p-6 flex flex-col h-full">
+        {/* New Chat Button */}
+        <button className="w-full flex items-center gap-3 px-4 py-3 bg-brand-orange text-white rounded-xl font-medium hover:bg-brand-orange/90 transition-all active:scale-95 shadow-lg shadow-brand-orange/20 mb-8">
+          <Plus className="w-5 h-5" />
+          <span>New Thread</span>
+        </button>
+
+        {/* Navigation */}
+        <div className="flex-1 space-y-2 overflow-y-auto pr-2">
+          <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-4 px-2">History</p>
           
-          <div className="pt-6">
-            <MenuSection title="ADMINISTRATION" />
-            <MenuItem href="/admin" icon={<UploadCloud size={18} />} label="Ingestion Pipeline" />
-            <MenuItem href="/admin/inventory" icon={<Database size={18} />} label="Document Inventory" />
-            <MenuItem href="/admin/system" icon={<Activity size={18} />} label="System Health" />
-          </div>
-        </ul>
-      </div>
-    </aside>
-  );
-}
-
-function MenuSection({ title }: { title: string }) {
-  return (
-    <li className="px-3 py-2">
-      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{title}</span>
-    </li>
-  );
-}
-
-function MenuItem({ href, icon, label, active = false }: { href: string; icon: React.ReactNode; label: string; active?: boolean }) {
-  return (
-    <li>
-      <Link href={href} className={`flex items-center p-2 rounded-lg group ${
-        active 
-          ? 'bg-orange-600/10 text-orange-500' 
-          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-      }`}>
-        <div className={`${active ? 'text-orange-500' : 'text-slate-400 group-hover:text-white'}`}>
-          {icon}
+          <HistoryItem title="LPU Hostel Rules" active />
+          <HistoryItem title="Minimum CGPA for Exchange" />
+          <HistoryItem title="Attendance Policy 2024" />
+          <HistoryItem title="Holiday List Query" />
         </div>
-        <span className="ms-3">{label}</span>
-      </Link>
-    </li>
+
+        {/* Bottom Actions */}
+        <div className="pt-6 mt-6 border-t border-white/5 space-y-1">
+          <button className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors group">
+            <Settings className="w-5 h-5 group-hover:rotate-45 transition-transform" />
+            <span>Settings</span>
+          </button>
+          <button className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-red-400 hover:bg-red-500/5 rounded-lg transition-colors">
+            <LogOut className="w-5 h-5" />
+            <span>Sign Out</span>
+          </button>
+          
+          <div className="pt-4 flex items-center justify-between px-2">
+            <a href="#" className="text-slate-600 hover:text-slate-400 transition-colors">
+              <Github className="w-5 h-5" />
+            </a>
+            <span className="text-[10px] text-slate-700 font-mono">v1.0.0-PRO</span>
+          </div>
+        </div>
+      </div>
+    </motion.aside>
+  );
+}
+
+function HistoryItem({ title, active = false }: { title: string; active?: boolean }) {
+  return (
+    <button className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all text-left ${
+      active 
+        ? 'bg-white/10 text-white border border-white/10 shadow-inner' 
+        : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
+    }`}>
+      <MessageSquare className={`w-4 h-4 ${active ? 'text-brand-orange' : 'text-slate-500'}`} />
+      <span className="truncate">{title}</span>
+    </button>
   );
 }

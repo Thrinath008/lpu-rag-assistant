@@ -1,0 +1,149 @@
+TITLE LPU Process of Left Marking for International Students
+
+OVERVIEW Lovely Professional University (LPU) is required to maintain and regularly update official records of Passport, Visa, and FRRO (Foreigners Regional Registration Office) details for all enrolled international students. This policy defines the step-by-step process for document verification and registration at the time of fresh admission, the process for renewal of expiring documents for continuing students, and the consequences — including Left Marking — for students who fail to comply with prescribed timelines. This process is applicable from 16th March 2019.
+
+KEY DEFINITIONS
+
+FRRO: Foreigners Regional Registration Office. All international students arriving in India are required to register with the FRRO within 14 days of arrival.
+
+FSIS Number: Foreign Student Information System number, generated on a government portal by the Record Cell upon completion of initial document verification.
+
+C Form: A mandatory registration document to be submitted by international students residing either inside or outside the university campus.
+
+DFRO Status: A system status indicating that the student has not completed FRRO registration.
+
+TEMP Status: A temporary status assigned to a student who has not reported for document renewal after the expiry of their passport or FRRO.
+
+Left Marking: A formal status update indicating that the student has been removed from active enrollment due to non-compliance with document submission requirements.
+
+PROCEDURE — SECTION I: FRESH ADMISSION OR NEW INTERNATIONAL STUDENTS
+
+Step 1: The student reports to LPU.
+
+Step 2: The Admissions Division verifies all documents, including passport and visa.
+
+Step 3: The student's university ID card is generated.
+
+Step 4: The student is asked whether they will reside inside or outside the LPU campus.
+
+Step 5 (For students residing inside LPU): The Record Cell generates the C Form and FSIS Number on the government portal. The student is issued a Bonafide Certificate and directed to complete FRRO registration within 14 days of arrival in India. The Division of Security provides assistance for this process.
+
+Step 6 (For students residing outside LPU): The student submits the C Form to the FSIV Cell. The FSIS Number is then generated and the student is issued a Bonafide Certificate. The student must complete FRRO registration within 14 days of arrival in India.
+
+Step 7: It is the sole responsibility of the student to complete FRRO registration within 14 days of arrival in India.
+
+Step 8: The Division of Security ensures that the student submits a copy of their completed FRRO registration to the FSIV Cell.
+
+Step 9: The FSIV Cell records the start and end dates of the student's Passport, Visa, and FRRO in the university system. The student's local mobile number and email address are also updated. The student must submit an undertaking to inform the Record Cell of any change in mobile number.
+
+Step 10: At the end of each month, the FSIV Cell submits the FRRO registration status of all fresh admission students to the Pro-Chancellor's office.
+
+Additional Requirement for Students Transferring from Another Indian University or Institute: Such students must obtain a No Objection Certificate (NOC) from their previous institution and a Transfer Certificate from the FRRO office. Their FSIS Number must be generated within 7 days of taking admission at LPU (instead of 14 days).
+
+PROCEDURE — SECTION II: CONSEQUENCES FOR NON-COMPLIANCE BY FRESH ADMISSION STUDENTS
+
+The following escalation process applies to students who fail to complete FSIS Number generation or FRRO registration within the prescribed timelines.
+
+Rejoining After Left Marking: The Division of Security must authenticate the student's whereabouts. The student's status can be restored to Active only after payment of a penalty of ₹5,000.
+
+PROCEDURE — SECTION III: CONTINUING STUDENTS — RENEWAL OF PASSPORT OR FRRO
+
+This section applies to students whose passport or FRRO registration is nearing expiry and requires renewal.
+
+Important Condition: Renewal processing will only be initiated if the student has appeared in at least one examination (regular, re-appear, or backlog) in the previous six months (one term), or has a minimum attendance of 10% in a term.
+
+Passport Renewal
+
+The student must initiate the renewal process at least 6 months before the passport expiry date.
+
+Automated reminder messages are sent to the student and parents at the following intervals: 180 days, 150 days, 100 days, 75 days, 25 days, and 15 days before expiry.
+
+FRRO Renewal
+
+The student must initiate the renewal process at least 2 months before the FRRO expiry date.
+
+Automated reminder messages are sent at the following intervals: 60 days, 45 days, 30 days, and 15 days before expiry.
+
+Rejoining After Left Marking (Renewal Cases): The Division of Security authenticates the student's whereabouts. Status is restored to Active only after payment of a penalty of ₹5,000.
+
+PROCEDURE — SECTION IV: STUDENTS WITH NO EXAMINATION RECORD OR LESS THAN 10% ATTENDANCE
+
+If a student has not appeared in any examination (regular, re-appear, or backlog) in the previous six months, or has less than 10% attendance, the following process is followed by the Record Cell.
+
+Case 1 — Student Reports After Six Months or More and Wishes to Leave (Go Back to Home Country)
+
+Applicable regardless of whether Passport or FRRO is valid or expired:
+
+Student must pay all outstanding fees up to the last attended term (the term with more than 10% attendance). If no term was attended, the fee for the first term must be paid.
+
+Student must submit a Gap Certificate (affidavit) confirming non-involvement in any illegal activity during the period of absence.
+
+Student must submit the C Form for the period of absence.
+
+A Bonafide Certificate will be sent to the FRRO office for initiating the student's deportation back to their home country.
+
+Case 2 — Student Reports After Six Months or More and Wishes to Continue Studies
+
+If Passport and FRRO are valid:
+
+Student must pay all outstanding fees up to the last attended term.
+
+Student must submit a Gap Certificate.
+
+Student must submit the C Form for the period of absence.
+
+A new FSIS Number will be generated.
+
+FRRO registration will be conditional and recommended for one semester only.
+
+Student must report to higher university authority to seek approval to continue the program.
+
+A penalty of ₹5,000 must be paid to restore Active status, verified by the Division of Security.
+
+If Passport or FRRO has expired:
+
+All of the above conditions apply.
+
+Additionally, the student must obtain a new visa from their home country before being eligible to continue the program.
+
+FRRO registration is conditional and valid for one semester only.
+
+Case 3 — Student Did Not Report to the University at All
+
+The Division of Security informs the FRRO office regardless of whether the Passport or FRRO is valid or expired.
+
+Important Note: If a student does not claim an exit or return Bonafide Certificate in the above cases, the student's information is updated to DIA and the Division of Security. The Division of Security will further report the matter to the local police station.
+
+DEADLINES AND IMPORTANT CONDITIONS
+
+CONTACT AND RESPONSIBLE OFFICES
+
+FSIV Cell / Record Cell: Responsible for generating FSIS numbers, recording document dates, and processing renewal cases.
+
+Division of Security: Assists students with FRRO registration, verifies student whereabouts in Left Marking cases, and reports non-compliance to local police.
+
+Division of International Affairs (DIA): Informed of Left Marking status updates.
+
+Pro-Chancellor's Office: Receives monthly FRRO registration status reports for fresh admission students.
+
+COMMON QUESTIONS STUDENTS MAY ASK
+
+What is the deadline for international students to complete FRRO registration after arriving in India?
+
+What documents are required for an international student's admission process at LPU?
+
+What happens if an international student does not complete FRRO registration within 14 days?
+
+When should a continuing student start the process of renewing their passport or FRRO?
+
+What is the penalty for rejoining LPU after being marked LEFT due to document non-compliance?
+
+What is the difference between DFRO status and TEMP status for international students?
+
+Can an international student continue their studies at LPU after being marked LEFT?
+
+What should an international student do if they have been absent for more than six months and want to return?
+
+What documents does a student transferring from another Indian university need to submit at LPU?
+
+Who should an international student contact for assistance with FRRO registration?
