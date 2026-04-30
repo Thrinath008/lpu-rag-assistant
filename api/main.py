@@ -7,6 +7,14 @@
 import sys
 import os
 import time
+
+# ============================================================
+# Render/Cloud SQLite3 Override for ChromaDB
+# ============================================================
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
