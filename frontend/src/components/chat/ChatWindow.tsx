@@ -10,10 +10,24 @@ import { Sidebar } from '../layout/Sidebar';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function ChatWindow() {
-  const { messages, isLoading, error, sendMessage } = useChat();
+  const { messages, isLoading, error, sendMessage, clearMessages } = useChat();
   const [input, setInput] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Responsive sidebar handling
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setSidebarOpen(false);
+      } else {
+        setSidebarOpen(true);
+      }
+    };
+    handleResize(); // Initial check
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -38,42 +52,46 @@ export function ChatWindow() {
         <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-brand-blue/10 rounded-full blur-[120px] animate-mesh" style={{ animationDelay: '-5s' }} />
       </div>
 
-      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <Sidebar 
+        isOpen={sidebarOpen} 
+        setIsOpen={setSidebarOpen} 
+        onNewThread={clearMessages}
+      />
 
-      <main className="flex-1 flex flex-col relative z-10">
+      <main className="flex-1 flex flex-col relative z-10 w-full overflow-hidden">
         {/* Top Navigation */}
-        <header className="glass-panel sticky top-0 z-50 border-b border-white/5 px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <header className="glass-panel sticky top-0 z-50 border-b border-white/5 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3 sm:gap-4">
             <button 
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="p-2 hover:bg-white/5 rounded-lg transition-colors text-slate-400 hover:text-white"
             >
               {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="w-10 h-10 bg-gradient-to-br from-brand-orange to-orange-400 rounded-xl flex items-center justify-center shadow-lg shadow-brand-orange/20">
-                  <Bot className="w-6 h-6 text-white" />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="relative shrink-0">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-brand-orange to-orange-400 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg shadow-brand-orange/20">
+                  <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
                 {isLoading && (
-                  <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-[#020617] rounded-full animate-pulse" />
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-[#020617] rounded-full animate-pulse" />
                 )}
               </div>
-              <div>
-                <h1 className="font-bold text-base leading-none mb-1 flex items-center gap-2">
+              <div className="truncate">
+                <h1 className="font-bold text-sm sm:text-base leading-none mb-1 flex items-center gap-2">
                   LPU Assistant
-                  <span className="px-1.5 py-0.5 rounded-md bg-white/5 text-[10px] font-mono text-slate-500 border border-white/5">PRO</span>
+                  <span className="hidden xs:inline-block px-1.5 py-0.5 rounded-md bg-white/5 text-[9px] font-mono text-slate-500 border border-white/5">PRO</span>
                 </h1>
-                <p className="text-[10px] text-slate-500 font-medium tracking-wide flex items-center gap-1.5">
-                  <span className="w-1 h-1 bg-emerald-500 rounded-full" />
-                  ONLINE • KNOWLEDGE BASE V1.2
+                <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium tracking-wide flex items-center gap-1.5 truncate">
+                  <span className="w-1 h-1 bg-emerald-500 rounded-full shrink-0" />
+                  ONLINE • KB V1.2
                 </p>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-xs text-slate-400">
+            <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-[10px] text-slate-400">
               <Command className="w-3 h-3" />
               <span>Shift + Enter to send</span>
             </div>
@@ -81,8 +99,8 @@ export function ChatWindow() {
         </header>
 
         {/* Chat Content */}
-        <div className="flex-1 overflow-y-auto relative custom-scrollbar">
-          <div className="max-w-4xl mx-auto px-6 py-12 min-h-full flex flex-col">
+        <div className="flex-1 overflow-y-auto relative custom-scrollbar overflow-x-hidden">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 min-h-full flex flex-col">
             <AnimatePresence mode="wait">
               {messages.length === 0 ? (
                 <motion.div 
@@ -90,21 +108,21 @@ export function ChatWindow() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="flex-1 flex flex-col items-center justify-center text-center space-y-12"
+                  className="flex-1 flex flex-col items-center justify-center text-center space-y-8 sm:space-y-12 py-12"
                 >
                   <div className="space-y-6">
-                    <div className="w-24 h-24 bg-gradient-to-br from-brand-orange to-orange-400 rounded-[32px] flex items-center justify-center mx-auto shadow-2xl shadow-brand-orange/30 rotate-3 transform hover:rotate-0 transition-transform duration-500">
-                      <Sparkles className="w-12 h-12 text-white" />
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-brand-orange to-orange-400 rounded-[24px] sm:rounded-[32px] flex items-center justify-center mx-auto shadow-2xl shadow-brand-orange/30 rotate-3 transform hover:rotate-0 transition-transform duration-500">
+                      <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
                     </div>
-                    <div className="space-y-3">
-                      <h2 className="text-5xl font-extrabold text-white tracking-tight">How can I assist you?</h2>
-                      <p className="text-slate-400 max-w-lg mx-auto text-lg leading-relaxed">
+                    <div className="space-y-3 px-4">
+                      <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">How can I assist you?</h2>
+                      <p className="text-slate-400 max-w-lg mx-auto text-sm sm:text-lg leading-relaxed">
                         Secure, official, and direct. Ask me about Lovely Professional University policies, admissions, and campus life.
                       </p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full max-w-2xl px-2">
                     <SuggestionCard 
                       icon="🏫"
                       title="Hostel Rules"
@@ -132,7 +150,7 @@ export function ChatWindow() {
                   </div>
                 </motion.div>
               ) : (
-                <div className="space-y-8 pb-32">
+                <div className="space-y-6 sm:space-y-8 pb-32">
                   {messages.map((msg, idx) => (
                     <motion.div
                       key={msg.id}
@@ -152,7 +170,7 @@ export function ChatWindow() {
         </div>
 
         {/* Input Dock */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 pointer-events-none">
+        <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 pointer-events-none">
           <div className="max-w-4xl mx-auto pointer-events-auto">
             <ChatInput
               input={input}
@@ -160,7 +178,7 @@ export function ChatWindow() {
               handleSubmit={handleSubmit}
               isLoading={isLoading}
             />
-            <p className="mt-3 text-center text-[10px] text-slate-600 font-medium">
+            <p className="mt-3 text-center text-[9px] sm:text-[10px] text-slate-600 font-medium">
               AI-generated responses. Cross-verify with LPU official portal for critical decisions.
             </p>
           </div>
@@ -169,6 +187,7 @@ export function ChatWindow() {
     </div>
   );
 }
+
 
 function SuggestionCard({ icon, title, desc, onClick }: { icon: string; title: string; desc: string; onClick: () => void }) {
   return (

@@ -1,24 +1,45 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { chatApi } from '../lib/api';
 import { ChatMessage } from '../lib/types';
 import { toast } from 'sonner';
+
+const STORAGE_KEY = 'lpu_chat_messages';
+const SESSION_KEY = 'lpu_chat_session_id';
 
 export const useChat = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Parse UUID statelessly
+  // Load from local storage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        setMessages(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse saved messages", e);
+      }
+    }
+  }, []);
+
+  // Save to local storage whenever messages change
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    }
+  }, [messages]);
+
   const getSessionId = () => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('chat_session_id');
+      return localStorage.getItem(SESSION_KEY);
     }
     return null;
   };
 
   const saveSessionId = (id: string) => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('chat_session_id', id);
+      localStorage.setItem(SESSION_KEY, id);
     }
   };
 
@@ -39,7 +60,6 @@ export const useChat = () => {
       const currentSessionId = getSessionId();
       const response = await chatApi.ask(content, currentSessionId);
       
-      // Cache session natively
       if (response.session_id) {
         saveSessionId(response.session_id);
       }
@@ -73,6 +93,9 @@ export const useChat = () => {
   const clearMessages = useCallback(() => {
     setMessages([]);
     setError(null);
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(SESSION_KEY);
+    toast.success("New thread started");
   }, []);
 
   return {
@@ -83,3 +106,4 @@ export const useChat = () => {
     clearMessages,
   };
 };
+
