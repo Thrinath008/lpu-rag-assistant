@@ -182,7 +182,6 @@ State what you know based strictly on the context, and advise them to verify the
 2. NEVER round or guess policy numbers.
 3. DEADLINES MUST BE PRECISE.
 """
-"""
 # ── Initialize Components ──────────────────────────────────────────────────
 print("🔄 Initializing RAG pipeline...")
 
