@@ -14,9 +14,9 @@ const v1Client = axios.create({
   baseURL: API_V1_URL,
 });
 
-// Security keys aligned with backend api/core/config.py
-const API_KEY = "lpu-rag-dev-key";
-const ADMIN_KEY = "lpu-admin-master-key";
+// Security keys aligned with backend environment variables
+const API_KEY = process.env.NEXT_PUBLIC_API_KEY || "lpu-rag-dev-key";
+const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_KEY || "lpu-admin-master-key";
 
 export const chatApi = {
   ask: async (query: string, session_id?: string | null): Promise<ChatResponse> => {
