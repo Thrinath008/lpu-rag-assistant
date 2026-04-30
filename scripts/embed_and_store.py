@@ -1,10 +1,10 @@
 # ============================================================
 # Project : LPU RAG Knowledge Assistant
-# Authors : Thrinath, Shambhavi, Arshad
+# Authors : Thrinath, Shambhavi, irshad
 # Module  : embed_and_store.py
 # Signature: T-RAG-LPU-2026-TEAM
 # ============================================================
-# This code is the work of Thrinath, Shambhavi, and Arshad.
+# This code is the work of Thrinath, Shambhavi, and irshad.
 # Built as part of the LPU RAG Knowledge Assistant project.
 # Unauthorized use, copying, or redistribution is prohibited.
 # Integrity token: 5468726e617468 (hex encoded author name)

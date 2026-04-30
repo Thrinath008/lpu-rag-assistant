@@ -1,6 +1,6 @@
 # ============================================================
 # Project : LPU RAG Knowledge Assistant
-# Authors : Thrinath, Shambhavi, Arshad
+# Authors : Thrinath, Shambhavi, irshad
 # Year    : 2026
 # Module  : main.py
 # ============================================================
@@ -20,12 +20,25 @@ from api.core.config import settings
 from api.core.logging import logger
 from api.routes import health, chat, admin, auth, session
 
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+
+# Initialize Rate Limiter
+limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# Register Rate Limiter
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 # ============================================================
 # Security Middleware
@@ -107,7 +120,8 @@ app.include_router(health, prefix="/api")
 app.include_router(auth, prefix="/api/v1/auth")
 app.include_router(chat, prefix=settings.API_V1_STR)
 app.include_router(session, prefix=settings.API_V1_STR)
-app.include_router(admin, prefix=settings.API_V1_STR)
+# DEPLOYMENT LOCK: Admin router completely disabled for production
+# app.include_router(admin, prefix=settings.API_V1_STR)
 
 if __name__ == "__main__":
     import uvicorn

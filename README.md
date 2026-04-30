@@ -4,7 +4,7 @@ Welcome to the **LPU Knowledge Assistant**, a robust, domain-specific Retrieval-
 
 ## 🌟 Project Overview
 
-- **Authors**: Thrinath, Shambhavi, Arshad
+- **Authors**: Thrinath, Shambhavi, irshad
 - **Year**: 2026
 - **Architecture**: Retrieval-Augmented Generation (RAG) + REST API
 - **Domain**: Institutional Knowledge QA (Academics, Finance, Career, Administration)

@@ -433,4 +433,4 @@ python -m uvicorn api.main:app --reload
 
 ---
 
-**Deployed with ❤️ by Thrinath, Shambhavi, Arshad - 2026**
+**Deployed with ❤️ by Thrinath, Shambhavi, irshad - 2026**

@@ -2,7 +2,7 @@
 
 // ============================================================
 // Project : LPU RAG Knowledge Assistant
-// Authors : Thrinath, Shambhavi, Arshad
+// Authors : Thrinath, Shambhavi, irshad
 // Year    : 2026
 // Module  : ChatWindow.tsx
 // Phase   : 3 — Memory + Intelligence + API + Frontend
@@ -69,23 +69,23 @@ export function ChatWindow() {
                 Ask me anything about Lovely Professional University. I have access to official policies, guidelines, and handbooks.
               </p>
             </div>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
-              <SuggestionCard 
-                text="What are hostel timings?" 
-                onClick={() => { setInput("What are the strict rules for hostel timings?"); handleSubmit(new Event('submit') as any); }} 
+              <SuggestionCard
+                text="What are hostel timings?"
+                onClick={() => { setInput("What are the strict rules for hostel timings?"); handleSubmit(new Event('submit') as any); }}
               />
-              <SuggestionCard 
-                text="Explain attendance requirements" 
-                onClick={() => { setInput("What is the minimum attendance required?"); handleSubmit(new Event('submit') as any); }} 
+              <SuggestionCard
+                text="Explain attendance requirements"
+                onClick={() => { setInput("What is the minimum attendance required?"); handleSubmit(new Event('submit') as any); }}
               />
-              <SuggestionCard 
-                text="How do I apply for leaves?" 
-                onClick={() => { setInput("How do I apply for a leave of absence?"); handleSubmit(new Event('submit') as any); }} 
+              <SuggestionCard
+                text="How do I apply for leaves?"
+                onClick={() => { setInput("How do I apply for a leave of absence?"); handleSubmit(new Event('submit') as any); }}
               />
-              <SuggestionCard 
-                text="Library hours during exams?" 
-                onClick={() => { setInput("What are the library hours during exams?"); handleSubmit(new Event('submit') as any); }} 
+              <SuggestionCard
+                text="Library hours during exams?"
+                onClick={() => { setInput("What are the library hours during exams?"); handleSubmit(new Event('submit') as any); }}
               />
             </div>
           </div>
@@ -95,15 +95,15 @@ export function ChatWindow() {
         {messages.length > 0 && (
           <div className="flex-1 overflow-y-auto space-y-6 pb-24 px-4 scroll-smooth">
             {messages.map((msg) => (
-              <ChatMessage 
-                key={msg.id} 
-                message={msg} 
-                isStreaming={false} 
+              <ChatMessage
+                key={msg.id}
+                message={msg}
+                isStreaming={false}
               />
             ))}
-            
+
             {isLoading && <TypingIndicator />}
-            
+
             {error && (
               <div className="flex gap-4">
                 <div className="w-8 h-8 rounded-lg bg-red-600/20 flex items-center justify-center shrink-0">
@@ -114,17 +114,17 @@ export function ChatWindow() {
                 </div>
               </div>
             )}
-            
+
             <div ref={messagesEndRef} />
           </div>
         )}
 
         {/* Input Area */}
-        <ChatInput 
-          input={input} 
-          setInput={setInput} 
-          handleSubmit={handleSubmit} 
-          isLoading={isLoading} 
+        <ChatInput
+          input={input}
+          setInput={setInput}
+          handleSubmit={handleSubmit}
+          isLoading={isLoading}
         />
       </div>
     </div>

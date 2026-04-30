@@ -1,10 +1,10 @@
 # ============================================================
 # Project : LPU RAG Knowledge Assistant
-# Authors : Thrinath, Shambhavi, Arshad
+# Authors : Thrinath, Shambhavi, irshad
 # Module  : rag_query.py
 # Signature: T-RAG-LPU-2026-TEAM
 # ============================================================
-# This code is the work of Thrinath, Shambhavi, and Arshad.
+# This code is the work of Thrinath, Shambhavi, and irshad.
 # Built as part of the LPU RAG Knowledge Assistant project.
 # Unauthorized use, copying, or redistribution is prohibited.
 # Integrity token: 5468726e617468 (hex encoded author name)
@@ -49,7 +49,7 @@ GROQ_MODEL      = "llama-3.1-8b-instant"
 SYSTEM_PROMPT = """
 # ============================================================
 # LPU KNOWLEDGE ASSISTANT — SYSTEM PROMPT
-# Authors : Thrinath, Shambhavi, Arshad
+# Authors : Thrinath, Shambhavi, irshad
 # Version : 2.1 Production
 # Year    : 2026
 # ============================================================
@@ -181,7 +181,6 @@ State what you know based strictly on the context, and advise them to verify the
 1. NUMBERS MUST BE EXACT (75% is 75%, not "around 75%").
 2. NEVER round or guess policy numbers.
 3. DEADLINES MUST BE PRECISE.
-"""
 """
 # ── Initialize Components ──────────────────────────────────────────────────
 print("🔄 Initializing RAG pipeline...")

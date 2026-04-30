@@ -2,7 +2,7 @@
 
 // ============================================================
 // Project : LPU RAG Knowledge Assistant
-// Authors : Thrinath, Shambhavi, Arshad
+// Authors : Thrinath, Shambhavi, irshad
 // Year    : 2026
 // Module  : ChatInput.tsx
 // Phase   : 3 — Memory + Intelligence + API + Frontend
@@ -39,11 +39,10 @@ export function ChatInput({ input, setInput, handleSubmit, isLoading }: ChatInpu
             <button
               type="submit"
               disabled={!input.trim() || isLoading}
-              className={`p-2.5 rounded-xl flex items-center justify-center transition-all ${
-                !input.trim() || isLoading 
-                  ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed' 
+              className={`p-2.5 rounded-xl flex items-center justify-center transition-all ${!input.trim() || isLoading
+                  ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed'
                   : 'bg-gradient-to-br from-orange-600 to-orange-500 text-white hover:from-orange-700 hover:to-orange-600 shadow-lg shadow-orange-600/30'
-              }`}
+                }`}
             >
               <Send className="w-5 h-5" />
             </button>

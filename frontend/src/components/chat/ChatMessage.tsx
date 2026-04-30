@@ -2,7 +2,7 @@
 
 // ============================================================
 // Project : LPU RAG Knowledge Assistant
-// Authors : Thrinath, Shambhavi, Arshad
+// Authors : Thrinath, Shambhavi, irshad
 // Year    : 2026
 // Module  : ChatMessage.tsx
 // Phase   : 3 — Memory + Intelligence + API + Frontend
@@ -21,20 +21,18 @@ export function ChatMessage({ message, isStreaming }: { message: ChatMessageType
 
   return (
     <div className={`flex gap-4 ${isUser ? 'flex-row-reverse' : ''} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
-      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-        isUser 
-          ? 'bg-slate-700/60' 
+      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isUser
+          ? 'bg-slate-700/60'
           : 'bg-gradient-to-br from-orange-600 to-orange-500 shadow-lg shadow-orange-600/20'
-      }`}>
+        }`}>
         {isUser ? <User className="w-5 h-5 text-slate-300" /> : <Bot className="w-5 h-5 text-white" />}
       </div>
-      
+
       <div className={`max-w-[85%] ${isUser ? 'items-end' : 'items-start'} flex flex-col gap-2`}>
-        <div className={`px-5 py-4 rounded-2xl overflow-hidden leading-relaxed prose prose-invert prose-p:leading-relaxed prose-pre:bg-slate-900 prose-pre:border prose-pre:border-slate-700 relative ${
-          isUser 
-            ? 'bg-slate-800/60 rounded-tr-sm text-slate-200' 
+        <div className={`px-5 py-4 rounded-2xl overflow-hidden leading-relaxed prose prose-invert prose-p:leading-relaxed prose-pre:bg-slate-900 prose-pre:border prose-pre:border-slate-700 relative ${isUser
+            ? 'bg-slate-800/60 rounded-tr-sm text-slate-200'
             : 'bg-slate-800/30 border border-slate-700/50 rounded-tl-sm text-slate-300 backdrop-blur-sm'
-        }`}>
+          }`}>
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {message.content}
           </ReactMarkdown>
@@ -49,7 +47,7 @@ export function ChatMessage({ message, isStreaming }: { message: ChatMessageType
 
         {!isUser && message.sources && message.sources.length > 0 && (
           <div className="w-full">
-            <button 
+            <button
               onClick={() => setShowSources(!showSources)}
               className="flex items-center gap-2 text-xs font-medium text-slate-400 hover:text-slate-300 transition-colors bg-slate-800/40 px-3 py-1.5 rounded-full border border-slate-700/50 hover:border-slate-600/80"
             >

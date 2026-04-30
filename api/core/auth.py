@@ -1,6 +1,6 @@
 # ============================================================
 # Project : LPU RAG Knowledge Assistant
-# Authors : Thrinath, Shambhavi, Arshad
+# Authors : Thrinath, Shambhavi, irshad
 # Year    : 2026
 # Module  : auth.py - Authentication & JWT Handling
 # ============================================================

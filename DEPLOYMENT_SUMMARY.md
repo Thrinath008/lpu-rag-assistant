@@ -2,7 +2,7 @@
 
 **Status**: ✅ Production Ready  
 **Version**: 2.0.0  
-**Authors**: Thrinath, Shambhavi, Arshad  
+**Authors**: Thrinath, Shambhavi, irshad  
 **Date**: 2026-04-12  
 
 ---
