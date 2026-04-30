@@ -92,7 +92,7 @@ tmp/
 *.pth
 *.onnx
 *.safetensors
-models/
+/models/
 model_cache/
 
 # ── ChromaDB internals ─────────────────────────────────────
