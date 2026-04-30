@@ -35,13 +35,14 @@ dist/
 build/
 
 # ── RAG Data Files (keep local, never push) ────────────────
-docs_raw/
-docs_clean/
-chunks/
-embeddings/
-*.docx
-*.pdf
-*.txt
+# docs_raw/
+# docs_clean/
+# chunks/
+!embeddings/
+!embeddings/**
+# *.docx
+# *.pdf
+# *.txt
 
 # ── Jupyter Notebooks ──────────────────────────────────────
 .ipynb_checkpoints/
@@ -96,8 +97,9 @@ tmp/
 model_cache/
 
 # ── ChromaDB internals ─────────────────────────────────────
-chroma.sqlite3
-*.chroma
+!embeddings/chroma.sqlite3
+!chroma.sqlite3
+# *.chroma
 
 # ── Testing ────────────────────────────────────────────────
 .pytest_cache/
