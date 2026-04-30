@@ -48,3 +48,4 @@ python-jose[cryptography]==3.3.0
 python-multipart==0.0.6
 slowapi==0.1.9
 pysqlite3-binary>=0.5.3
+passlib==1.7.4
