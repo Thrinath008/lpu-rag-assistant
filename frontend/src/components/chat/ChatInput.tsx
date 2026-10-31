@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect } from 'react';
-import { Send, ArrowUp } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ArrowUp } from 'lucide-react';
 
 interface ChatInputProps {
   input: string;
@@ -14,60 +13,50 @@ interface ChatInputProps {
 export function ChatInput({ input, setInput, handleSubmit, isLoading }: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-resize textarea
   useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
-    }
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
   }, [input]);
 
+  const canSend = input.trim().length > 0 && !isLoading;
+
   return (
-    <motion.div 
-      initial={{ y: 20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      className="relative group"
+    <form
+      onSubmit={handleSubmit}
+      className="flex items-end gap-2 rounded-[22px] border border-line bg-surface p-1.5 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.12)] transition-colors focus-within:border-saffron"
     >
-      {/* Input Glow Effect */}
-      <div className="absolute -inset-0.5 bg-gradient-to-r from-brand-orange to-brand-blue rounded-[26px] blur opacity-10 group-focus-within:opacity-25 transition duration-1000 group-focus-within:duration-200"></div>
-      
-      <form 
-        onSubmit={handleSubmit} 
-        className="relative flex items-end gap-2 bg-[#0f172a]/80 backdrop-blur-2xl rounded-[24px] border border-white/10 p-2 shadow-2xl overflow-hidden transition-all duration-300 focus-within:border-brand-orange/40"
+      <textarea
+        ref={textareaRef}
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+            e.preventDefault();
+            handleSubmit(e);
+          }
+        }}
+        aria-label="Your question"
+        placeholder="Ask about attendance, fees, hostel…"
+        rows={1}
+        enterKeyHint="send"
+        className="max-h-40 min-h-11 flex-1 resize-none bg-transparent px-3.5 py-2.5 text-base text-ink outline-none placeholder:text-ink-faint"
+      />
+      <button
+        type="submit"
+        disabled={!canSend}
+        aria-label="Send question"
+        className={`mb-0.5 mr-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all active:scale-95 ${
+          canSend ? 'bg-saffron text-white hover:brightness-95' : 'bg-paper text-ink-faint'
+        }`}
       >
-        <textarea
-          ref={textareaRef}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              handleSubmit(e);
-            }
-          }}
-          placeholder="Ask anything about LPU..."
-          className="flex-1 max-h-[200px] min-h-[48px] bg-transparent text-slate-100 px-4 py-3 focus:outline-none resize-none placeholder-slate-500 text-sm sm:text-base scrollbar-none"
-          rows={1}
-        />
-        
-        <div className="pb-1 pr-1">
-          <button
-            type="submit"
-            disabled={!input.trim() || isLoading}
-            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${!input.trim() || isLoading
-                ? 'bg-slate-800 text-slate-600 cursor-not-allowed opacity-50'
-                : 'bg-brand-orange text-white hover:scale-105 active:scale-95 shadow-lg shadow-brand-orange/30'
-              }`}
-          >
-            {isLoading ? (
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <ArrowUp className="w-5 h-5" />
-            )}
-          </button>
-        </div>
-      </form>
-    </motion.div>
+        {isLoading ? (
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-ink-faint/40 border-t-ink-soft" />
+        ) : (
+          <ArrowUp className="h-5 w-5" />
+        )}
+      </button>
+    </form>
   );
 }
-

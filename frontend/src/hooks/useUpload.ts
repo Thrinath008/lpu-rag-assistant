@@ -19,8 +19,8 @@ export const useUpload = () => {
       setLastUploadStatus(response.message);
       toast.success("Document uploaded successfully!", { id: toastId });
       return response;
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.detail || "Failed to upload document.";
+    } catch (err) {
+      const errorMessage = (err as { response?: { data?: { detail?: string } } }).response?.data?.detail || "Failed to upload document.";
       setError(errorMessage);
       toast.error(errorMessage, { id: toastId });
       throw err;

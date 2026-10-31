@@ -1,31 +1,22 @@
-// ============================================================
-// Project : LPU RAG Knowledge Assistant
-// Authors : Thrinath
-// Year    : 2026
-// Module  : SourceCard.tsx
-// Phase   : 3 — Memory + Intelligence + API + Frontend
-// ============================================================
 import React from 'react';
 import { Source } from '@/lib/types';
 
-interface SourceCardProps {
-  source: Source;
-}
+export function SourceCard({ source }: { source: Source }) {
+  const pct = Math.round(source.score * 100);
+  const name = source.source_file.replace(/\.(docx|txt)$/i, '').replace(/[_-]+/g, ' ');
 
-export function SourceCard({ source }: SourceCardProps) {
   return (
-    <div className="bg-slate-800/40 border border-slate-700/50 p-3 rounded-lg text-xs hover:border-slate-600/80 transition">
-      <div className="flex justify-between items-start mb-1.5">
-        <span className="font-semibold text-orange-400 truncate max-w-[80%]" title={source.source_file}>
-          {source.source_file.replace('.docx', '')}
-        </span>
-        <span className="text-slate-500 bg-slate-900/60 px-1.5 py-0.5 rounded ml-2 text-xs">
-          {(source.score * 100).toFixed(0)}%
-        </span>
+    <div className="rounded-xl border border-line bg-surface p-3">
+      <div className="flex items-start justify-between gap-3">
+        <p className="min-w-0 truncate text-[13px] font-semibold capitalize text-ink" title={source.source_file}>
+          {name}
+        </p>
+        <span className="shrink-0 font-mono text-[11px] text-ink-soft">{pct}% match</span>
       </div>
-      <p className="text-slate-400 line-clamp-3 leading-snug" title={source.text}>
-        "{source.text}"
-      </p>
+      <div className="mt-2 h-1 overflow-hidden rounded-full bg-paper">
+        <div className="h-full rounded-full bg-saffron" style={{ width: `${pct}%` }} />
+      </div>
+      <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-ink-soft">{source.text}</p>
     </div>
   );
 }

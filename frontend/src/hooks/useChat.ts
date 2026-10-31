@@ -75,8 +75,8 @@ export const useChat = () => {
       }]);
 
       toast.success("Response complete");
-    } catch (err: any) {
-      const errorChatMessage = err.message || "Failed to get an answer from the assistant.";
+    } catch (err) {
+      const errorChatMessage = (err as Error).message || "Failed to get an answer from the assistant.";
       setError(errorChatMessage);
       toast.error(errorChatMessage);
       

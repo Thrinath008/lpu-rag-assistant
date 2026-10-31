@@ -20,7 +20,7 @@ const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_KEY || "lpu-admin-master-key";
 
 export const chatApi = {
   ask: async (query: string, session_id?: string | null): Promise<ChatResponse> => {
-    const payload: any = { query };
+    const payload: { query: string; session_id?: string } = { query };
     if (session_id) payload.session_id = session_id;
 
     const response = await v1Client.post<ChatResponse>('/ask', 
@@ -30,7 +30,7 @@ export const chatApi = {
     return response.data;
   },
   askStream: async (query: string, session_id?: string | null): Promise<Response> => {
-    const payload: any = { query };
+    const payload: { query: string; session_id?: string } = { query };
     if (session_id) payload.session_id = session_id;
 
     const response = await fetch(`${API_V1_URL}/ask/stream`, {

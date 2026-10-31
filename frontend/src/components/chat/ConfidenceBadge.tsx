@@ -1,53 +1,23 @@
-// ============================================================
-// Project : LPU RAG Knowledge Assistant
-// Authors : Thrinath
-// Year    : 2026
-// Module  : ConfidenceBadge.tsx
-// Phase   : 3 — Memory + Intelligence + API + Frontend
-// ============================================================
-
 import React from 'react';
 import { ConfidenceResult } from '@/lib/types';
-import { ShieldCheck, ShieldAlert, AlertTriangle } from 'lucide-react';
 
-interface ConfidenceBadgeProps {
-  confidence: ConfidenceResult;
-}
+const TONES: Record<string, { dot: string; chip: string }> = {
+  green: { dot: 'bg-verified', chip: 'bg-verified-soft text-verified' },
+  yellow: { dot: 'bg-caution', chip: 'bg-caution-soft text-caution' },
+  red: { dot: 'bg-risk', chip: 'bg-risk-soft text-risk' },
+};
 
-export function ConfidenceBadge({ confidence }: ConfidenceBadgeProps) {
+export function ConfidenceBadge({ confidence }: { confidence: ConfidenceResult }) {
   if (!confidence) return null;
-
-  const { level, label, color, message } = confidence;
-
-  let Icon = ShieldCheck;
-  let colorStyles = '';
-
-  switch (color) {
-    case 'green':
-      Icon = ShieldCheck;
-      colorStyles = 'bg-green-500/10 text-green-500 border-green-500/20';
-      break;
-    case 'yellow':
-      Icon = ShieldAlert;
-      colorStyles = 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
-      break;
-    case 'red':
-      Icon = AlertTriangle;
-      colorStyles = 'bg-red-500/10 text-red-500 border-red-500/20';
-      break;
-    default:
-      colorStyles = 'bg-gray-500/10 text-gray-400 border-gray-500/20';
-  }
+  const tone = TONES[confidence.color] ?? { dot: 'bg-ink-faint', chip: 'bg-paper text-ink-soft' };
 
   return (
-    <div className={`mt-2 flex flex-col gap-1 text-xs border rounded-lg p-2 ${colorStyles}`}>
-      <div className="flex items-center gap-1.5 font-medium">
-        <Icon className="w-3.5 h-3.5" />
-        <span>{label}</span>
-      </div>
-      <span className="opacity-80 leading-relaxed text-[11px] ml-5">
-        {message}
-      </span>
-    </div>
+    <span
+      title={confidence.message}
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${tone.chip}`}
+    >
+      <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />
+      {confidence.label}
+    </span>
   );
 }

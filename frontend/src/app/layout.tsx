@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Inter } from "next/font/google";
+import { Bricolage_Grotesque, Instrument_Sans, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from 'react-hot-toast';
 import { setupAuthInterceptor } from "@/lib/authApi";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
 
-const inter = Inter({ subsets: ["latin"] });
+const display = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-bricolage", display: "swap" });
+const sans = Instrument_Sans({ subsets: ["latin"], variable: "--font-instrument", display: "swap" });
+const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
 
 export default function RootLayout({
   children,
@@ -19,10 +21,12 @@ export default function RootLayout({
   }, []);
 
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className={`${display.variable} ${sans.variable} ${mono.variable}`}>
       <head>
-        <title>LPU RAG Assistant</title>
-        <meta name="description" content="Knowledge hub and assistant for LPU students and staff." />
+        <title>LPU Assistant</title>
+        <meta name="description" content="Ask about LPU policies and get answers cited from the official documents." />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="theme-color" content="#f5f7fa" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -37,11 +41,14 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.className} bg-slate-900 text-slate-50 min-h-screen antialiased`}>
+      <body className="min-h-dvh antialiased">
         <ErrorBoundary>
           {children}
         </ErrorBoundary>
-        <Toaster />
+        <Toaster
+          position="top-center"
+          toastOptions={{ style: { background: '#101828', color: '#fff', fontSize: '14px', borderRadius: '12px' } }}
+        />
       </body>
     </html>
   );
