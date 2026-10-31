@@ -46,7 +46,8 @@ class RewriterService:
             response = self._get_client().chat.completions.create(
                 model=settings.GROQ_MODEL,
                 temperature=0.0,
-                max_tokens=200,
+                max_tokens=600,
+                reasoning_effort="low",
                 messages=[{"role": "user", "content": prompt}]
             )
             

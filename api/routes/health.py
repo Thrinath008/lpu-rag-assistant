@@ -24,7 +24,7 @@ router = APIRouter()
 def get_health():
     return HealthResponse(
         status="ok",
-        model="llama-3.1-8b-instant",
+        model="openai/gpt-oss-120b",
         vector_db="connected",
         total_chunks=68,
         embedding_model="all-MiniLM-L6-v2",
@@ -41,5 +41,5 @@ def get_stats():
         categories=6,
         embedding_model="all-MiniLM-L6-v2",
         vector_db="ChromaDB",
-        llm_model="llama-3.1-8b-instant"
+        llm_model="openai/gpt-oss-120b"
     )

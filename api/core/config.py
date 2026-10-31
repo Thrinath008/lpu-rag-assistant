@@ -26,10 +26,10 @@ class Settings(BaseSettings):
     CHUNKS_DIR: str = os.path.join(BASE_DIR, "chunks")
     
     # Model Config
-    GROQ_MODEL: str = "llama-3.1-8b-instant"
+    GROQ_MODEL: str = "openai/gpt-oss-120b"
     EMBED_MODEL: str = "all-MiniLM-L6-v2"
     TOP_K: int = 5
-    MAX_TOKENS: int = 1024
+    MAX_TOKENS: int = 2048
     TEMPERATURE: float = 0.2
     MAX_HISTORY: int = 10
     SESSION_TTL_HRS: int = 2

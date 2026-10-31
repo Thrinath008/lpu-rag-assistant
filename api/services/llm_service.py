@@ -65,6 +65,7 @@ Please answer based only on the context above."""
                 model=settings.GROQ_MODEL,
                 temperature=settings.TEMPERATURE,
                 max_tokens=settings.MAX_TOKENS,
+                reasoning_effort="low",
                 messages=messages
             )
             
