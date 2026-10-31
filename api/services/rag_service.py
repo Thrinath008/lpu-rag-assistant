@@ -134,9 +134,9 @@ def ask_rag(query: str, session_id: str) -> Dict[str, Any]:
                 query=query
             )
             
-            # Only send sources if LLM actively parsed metadata and confidence was above LOW
+            # Send sources whenever retrieval found relevant chunks and confidence was above LOW
             sources = format_sources_for_ui(chunks)
-            if ("Source" not in answer and "source" not in answer) or confidence_data["level"] == "LOW":
+            if confidence_data["level"] == "LOW":
                 sources = []
         
         # 9. Save Interaction to Memory
