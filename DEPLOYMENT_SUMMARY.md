@@ -51,7 +51,7 @@ npm install
 npm run dev
 
 # 5. Visit http://localhost:3000
-# Login: saragadathrinath@gmail.com / Sthrinath@1234
+# Login: saragadathrinath@gmail.com / <ADMIN_PASSWORD>
 ```
 
 ### Docker Deployment
@@ -105,7 +105,7 @@ docker-compose up --build
 
 ```
 Email:    saragadathrinath@gmail.com
-Password: Sthrinath@1234
+Password: <ADMIN_PASSWORD>
 ```
 
 To change:
@@ -285,7 +285,7 @@ sqlite3 auth.db "SELECT * FROM users;"
 # Reset admin password
 python3 << 'EOF'
 from api.core.auth import get_user_by_email, create_user
-create_user("saragadathrinath@gmail.com", "Sthrinath@1234", is_admin=True)
+create_user("saragadathrinath@gmail.com", "<ADMIN_PASSWORD>", is_admin=True)
 EOF
 ```
 

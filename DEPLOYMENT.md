@@ -252,7 +252,7 @@ curl https://yourdomain.com/
 ### Default Login
 
 - **Email**: `saragadathrinath@gmail.com`
-- **Password**: `Sthrinath@1234`
+- **Password**: `<ADMIN_PASSWORD>`
 
 ⚠️ **Change These Immediately!**
 

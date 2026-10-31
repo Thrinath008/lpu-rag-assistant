@@ -372,7 +372,7 @@ Total documentation: ~2000 lines
 
 ```
 Email:    saragadathrinath@gmail.com
-Password: Sthrinath@1234
+Password: <ADMIN_PASSWORD>
 ```
 
 To change:

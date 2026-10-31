@@ -68,7 +68,7 @@ open http://localhost:3000
 
 # 7. Login with demo credentials
 # Email: saragadathrinath@gmail.com
-# Password: Sthrinath@1234
+# Password: <ADMIN_PASSWORD>
 ```
 
 ### Docker Deployment
@@ -91,7 +91,7 @@ docker-compose up --build
 
 ```
 Email:    saragadathrinath@gmail.com
-Password: Sthrinath@1234
+Password: <ADMIN_PASSWORD>
 ```
 
 ---
@@ -288,7 +288,7 @@ NEXT_PUBLIC_API_URL="http://127.0.0.1:8000/api"
 
 ```bash
 # Reset password
-python -c "from api.core.auth import create_user; create_user('saragadathrinath@gmail.com', 'Sthrinath@1234', is_admin=True)"
+python -c "from api.core.auth import create_user; create_user('saragadathrinath@gmail.com', '<ADMIN_PASSWORD>', is_admin=True)"
 ```
 
 ### Backend won't start

@@ -22,7 +22,7 @@ def test_password_hashing():
     assert not verify_password("WrongPassword", hashed)
 
 def test_authentication():
-    user = authenticate_user("saragadathrinath@gmail.com", "Sthrinath@1234")
+    user = authenticate_user("saragadathrinath@gmail.com", "<ADMIN_PASSWORD>")
     assert user is not None
     assert user.email == "saragadathrinath@gmail.com"
     assert user.is_admin == True
@@ -91,7 +91,7 @@ def test_health_endpoint():
 def test_login_success():
     response = client.post("/api/v1/auth/login", json={
         "email": "saragadathrinath@gmail.com",
-        "password": "Sthrinath@1234"
+        "password": "<ADMIN_PASSWORD>"
     })
     assert response.status_code == 200
     assert "access_token" in response.json()
@@ -130,7 +130,7 @@ def test_login_flow():
         
         # Fill form
         page.fill('input[type="email"]', "saragadathrinath@gmail.com")
-        page.fill('input[type="password"]', "Sthrinath@1234")
+        page.fill('input[type="password"]', "<ADMIN_PASSWORD>")
         
         # Submit
         page.click('button[type="submit"]')

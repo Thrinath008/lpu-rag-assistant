@@ -6,6 +6,7 @@
 # ============================================================
 
 import os
+import logging
 import sqlite3
 from datetime import datetime, timedelta
 from typing import Optional
@@ -15,6 +16,8 @@ from pydantic import BaseModel
 
 # JWT Configuration
 SECRET_KEY = os.getenv("SECRET_KEY", "lpu-secret-key-2026-change-in-production")
+if SECRET_KEY == "lpu-secret-key-2026-change-in-production":
+    logging.getLogger(__name__).warning("SECRET_KEY is not set; using the insecure default. Set SECRET_KEY in production.")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
 
@@ -62,14 +65,18 @@ def init_db():
         )
     ''')
     
-    # Create default admin user if not exists
-    cursor.execute('SELECT * FROM users WHERE email = ?', ('saragadathrinath@gmail.com',))
-    if not cursor.fetchone():
-        hashed_password = pwd_context.hash("Sthrinath@1234")
-        cursor.execute('''
-            INSERT INTO users (email, password_hash, is_admin)
-            VALUES (?, ?, ?)
-        ''', ('saragadathrinath@gmail.com', hashed_password, 1))
+    # Seed the admin user from env vars (ADMIN_EMAIL / ADMIN_PASSWORD); skipped if no password is set
+    admin_email = os.getenv("ADMIN_EMAIL", "saragadathrinath@gmail.com")
+    admin_password = os.getenv("ADMIN_PASSWORD")
+    if admin_password:
+        cursor.execute('SELECT * FROM users WHERE email = ?', (admin_email,))
+        if not cursor.fetchone():
+            cursor.execute('''
+                INSERT INTO users (email, password_hash, is_admin)
+                VALUES (?, ?, ?)
+            ''', (admin_email, pwd_context.hash(admin_password), 1))
+    else:
+        logging.getLogger(__name__).warning("ADMIN_PASSWORD is not set; no admin user was seeded.")
     
     conn.commit()
     conn.close()

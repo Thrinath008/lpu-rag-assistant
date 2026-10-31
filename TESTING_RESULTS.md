@@ -25,7 +25,7 @@
 
 ### ✅ Test 3: Authentication - Successful Login
 - **Endpoint**: `POST /api/v1/auth/login`
-- **Credentials**: saragadathrinath@gmail.com / Sthrinath@1234
+- **Credentials**: saragadathrinath@gmail.com / <ADMIN_PASSWORD>
 - **Status Code**: 200 OK
 - **Response**:
   - JWT Token: Generated ✓
@@ -117,7 +117,7 @@
 ### Database
 - **SQLite (auth.db)**: ✅ Created
 - **Default Admin User**: ✅ Created
-- **Credentials**: saragadathrinath@gmail.com / Sthrinath@1234
+- **Credentials**: saragadathrinath@gmail.com / <ADMIN_PASSWORD>
 
 ---
 
